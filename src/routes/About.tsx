@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import Footer from '../components/Footer';
+import SelectedWorks from '../components/SelectedWorks';
 import { TLink } from '../lib/transition';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -68,6 +69,8 @@ export default function About() {
             </Reveal>
           </div>
         </div>
+
+        <SelectedWorks />
 
         {/* capabilities */}
         <div className="grid md:grid-cols-12 gap-10 mt-20 md:mt-32">

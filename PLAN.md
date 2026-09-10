@@ -49,7 +49,7 @@
 4. **Footer minimal** — link `/about` + `/contact`, timezone, `© 2026`.
 
 ### `/about` — Halaman sendiri (ritme tenang, TANPA foto)
-Bio tipografis + daftar capabilities + selected press/recognition (placeholder) + daftar tools/stack. Tidak ada portrait, tidak ada bulan.
+Bio tipografis + selected works ala Inspirux (judul raksasa 2 baris drift horizontal berlawanan via GSAP scrub + kolom kiri sticky + 6 baris karya + preview kursor desktop) + capabilities + recognition + colophon. Tidak ada portrait, tidak ada bulan.
 
 ### `/contact` — Halaman sendiri (kasual, placeholder)
 Judul besar "say hi" + email placeholder + social links placeholder + info base/timezone. Tanpa form (mailto + links).
@@ -98,7 +98,7 @@ src/
   data/works.ts           → 11 karya (judul, kategori, tahun, url, thumb)
   routes/
     Home.tsx              → Hero + SelectedWorks + FullIndex + Manifesto (freeform)
-    About.tsx             → bio tipografis + capabilities + recognition
+    About.tsx             → bio + SelectedWorks (drift ala Inspirux) + capabilities
     Contact.tsx           → say hi + placeholder links
   canvas/
     Scene.tsx             → satu Three.js canvas + state A/B/C

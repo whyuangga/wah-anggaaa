@@ -121,6 +121,10 @@ dengan fallback `prefers-reduced-motion`.
   desktop — spotlight mengikuti gambar yang sedang terlihat.
 - **State section 3D**: hook `useSceneSections` memakai ScrollTrigger untuk
   menulis section dominan (0 hero, 1 works, 2 manifesto) ke `sceneBus`.
+- **Drift heading About** (`SelectedWorks`): timeline GSAP `scrub: 1` —
+  baris "SELECTED" melayang `x: −50% → 0`, baris "WORKS" `+50% → 0`
+  (meniru Inspirux; ±18% di mobile). Kolom kiri pakai CSS `sticky`,
+  preview kursor pakai rAF lerp (fine pointer saja).
 
 ### 3. GSAP timeline — transisi halaman morph
 
@@ -219,6 +223,7 @@ dan loader-nya.
     ├── components/
     │   ├── Loader.tsx       → intro video + frame counter rAF + garis progres
     │   ├── Nav.tsx          → navigasi fixed transparan (TLink)
+    │   ├── SelectedWorks.tsx → heading drift horizontal + baris karya + preview kursor
     │   └── Footer.tsx       → footer raksasa + jam Jakarta + status fun
     ├── routes/
     │   ├── Home.tsx         → hero + Works (Lallé grid/spotlight/overlay) + manifesto scrub
