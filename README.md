@@ -48,7 +48,8 @@ GitHub Pages maupun Vercel dari codebase yang sama.
    **focus overlay fullscreen** (preview besar + blurb + link visit +
    prev/next + keyboard Esc/←/→, scroll halaman dikunci). Di mobile berubah
    jadi 1 kolom landscape + rel judul sticky di kanan dengan **scroll-spy**
-   (judul aktif mengikuti gambar yang terlihat). Tombol `[ acak! ]`
+   (judul aktif mengikuti gambar yang terlihat); tap judul = smooth-scroll
+   ke gambarnya. Tombol `[ acak! ]`
    mengacak urutan kolase + rel dengan kaskade ulang. Tiap karya punya
    halaman case-study (`/works/:slug`): cerita fiktif, angka ngarang,
    stack, visit, dan nav prev/next.

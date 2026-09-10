@@ -44,7 +44,7 @@
 
 ### `/` — Landing (freeform collage)
 1. **Hero** — tagline raksasa 3 baris (`A one-man playground for imaginary brands, taken far too seriously.`) + kata terakhir berputar (kinetic words), role `Designer & Creative Developer`, label `[ just for fun ]` + `[ jakarta — wib ]`, CTA ke `/contact`. State 3D: A.
-2. **Works grid (ala Grégory Lallé)** — 11 thumbnail dalam satu kolase flowing (masonry CSS) + rel judul; hover/tap judul = spotlight (lainnya meredup); klik sel = focus overlay fullscreen (preview besar + blurb + visit + case-study + prev/next + keyboard). Tombol [ acak! ] mengacak urutan. Mobile: 1 kolom landscape + rel judul sticky kanan + scroll-spy. State 3D: B.
+2. **Works grid (ala Grégory Lallé)** — 11 thumbnail dalam satu kolase flowing (masonry CSS) + rel judul; hover/tap judul = spotlight (lainnya meredup); klik sel = focus overlay fullscreen (preview besar + blurb + visit + case-study + prev/next + keyboard). Tombol [ acak! ] mengacak urutan. Mobile: 1 kolom landscape + rel judul sticky kanan + scroll-spy + tap judul melompat ke gambar. State 3D: B.
 3. **Manifesto** — 2–4 kalimat, reveal kata-per-kata mengikuti scroll. State 3D: C.
 4. **Footer minimal** — link `/about` + `/contact`, timezone, `© 2026`. Kata raksasa cascade per huruf saat masuk viewport + wave saat hover.
 

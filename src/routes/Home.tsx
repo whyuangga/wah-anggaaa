@@ -198,7 +198,23 @@ function Works() {
                   key={w.index}
                   onMouseEnter={() => setFocus(i)}
                   onFocus={() => setFocus(i)}
-                  onClick={() => setFocus(focus === i ? null : i)}
+                  onClick={() => {
+                    if (focus === i) {
+                      setFocus(null);
+                      return;
+                    }
+                    setFocus(i);
+                    // sentuh: tap judul = lompat ke gambarnya (biar tak stuck redup)
+                    if (window.matchMedia('(pointer: coarse)').matches) {
+                      const reduced = window.matchMedia(
+                        '(prefers-reduced-motion: reduce)',
+                      ).matches;
+                      cellRefs.current[i]?.scrollIntoView({
+                        behavior: reduced ? 'auto' : 'smooth',
+                        block: 'center',
+                      });
+                    }
+                  }}
                   aria-pressed={on}
                   className={`group flex md:items-baseline items-start justify-end md:justify-start gap-2 py-1 transition-all duration-300 cursor-pointer ${
                     on ? 'text-bone md:translate-x-1.5' : 'text-bone/35 hover:text-bone/80'
@@ -274,7 +290,7 @@ function Works() {
               );
             })}
           </div>
-          <Meta className="md:hidden mt-2">tap judul = sorot · tap gambar = buka</Meta>
+          <Meta className="md:hidden mt-2">tap judul = lompat · tap gambar = buka</Meta>
         </div>
       </div>
 
