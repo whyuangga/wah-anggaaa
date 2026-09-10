@@ -7,10 +7,10 @@ import { useStudioStatus } from '../hooks/useStudioStatus';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
-const GEN_A = ['Lex', 'Vel', 'Mor', 'Sol', 'Nov', 'Aer', 'Ony', 'Lum', 'Kas', 'Zen', 'Bru', 'Fal', 'Ond', 'Pra', 'Ves', 'Kir', 'Hal', 'Rou', 'Sel', 'Tan'];
-const GEN_B = ['avia', 'oria', 'enne', 'essa', 'ova', 'elle', 'issa', 'una', 'ique', 'ora', 'isia', 'ara', 'onne', 'ille', 'usia', 'erre', 'anda', 'ilia', 'ossa', 'urra'];
-const GEN_SUF = ['', '', '', '®', ' co.', ' supply', ' club', ' studio'];
-const GEN_CAT = ['parfum fiktif', 'kopi imajiner', 'jam khayalan', 'galeri hantu', 'hotel mimpi', 'roti khayal', 'sneakers astral', 'teh gaib', 'bengkel angkasa', 'toko rindu', 'sirkus mini', 'studio hujan'];
+const GEN_A = ['Lex', 'Vel', 'Mor', 'Sol', 'Nov', 'Aer', 'Ony', 'Lum', 'Kas', 'Zen', 'Bru', 'Fal', 'Ond', 'Pra', 'Ves', 'Kir', 'Hal', 'Rou', 'Sel', 'Tan', 'Dra', 'Mir', 'Fen', 'Gal', 'Yor', 'Bel', 'Cor', 'Del', 'Esk', 'Fra', 'Gre', 'Hes', 'Jol', 'Kru', 'Lor', 'Mel', 'Ner', 'Osk', 'Pel', 'Quin'];
+const GEN_B = ['avia', 'oria', 'enne', 'essa', 'ova', 'elle', 'issa', 'una', 'ique', 'ora', 'isia', 'ara', 'onne', 'ille', 'usia', 'erre', 'anda', 'ilia', 'ossa', 'urra', 'aria', 'elia', 'inoa', 'ozia', 'ulia', 'emma', 'iva', 'odia', 'amara', 'elora', 'isolde', 'ovia', 'umbra', 'axia', 'evara', 'olia', 'indra', 'orca', 'yuki', 'ozma'];
+const GEN_SUF = ['', '', '', '®', ' co.', ' supply', ' club', ' studio', '™', ' & co.', ' lab', ' goods', ' works', ' society'];
+const GEN_CAT = ['parfum fiktif', 'kopi imajiner', 'jam khayalan', 'galeri hantu', 'hotel mimpi', 'roti khayal', 'sneakers astral', 'teh gaib', 'bengkel angkasa', 'toko rindu', 'sirkus mini', 'studio hujan', 'cokelat mimpi', 'mie khayal', 'sepatu awan', 'payung badai', 'radio rindu', 'perpustakaan hantu', 'biro jodoh alien', 'jamu modern', 'soto terbang', 'barbershop kilat', 'florist malam', 'planetarium keliling'];
 
 function racik() {
   const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
