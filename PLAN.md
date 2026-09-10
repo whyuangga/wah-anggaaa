@@ -22,7 +22,7 @@
 
 ## 1b. Intro & transisi (locked)
 
-- **Intro/loader ala Onoera:** video kecil (±112–128px) di tengah layar void + nama `wah:anggaaa` mono di bawahnya. Video: `public/videos/loader.mp4` (montage kinetik, 3 dtk, 720p, tanpa audio, fade in/out). Loader selesai mengikuti event `ended` video; fallback timeout 4.5 dtk; reduced-motion → teks saja 0.7 dtk. Sekali per session. Reveal ala Onoera: nav + routes tidak di-mount sebelum intro selesai, lalu fade-in kalem (1.3–1.6 dtk, geser ≤20px, stagger) berbarengan dengan overlay yang terangkat 1.2 dtk.
+- **Intro/loader ala Lallé:** video kecil (±112–128px) di tengah layar void + frame counter raksasa (00 → 99, tak pernah 100) yang naik dari kanan-bawah ke kanan-atas mengikuti progres frame video + garis progres tepi kanan. Tanpa teks brand. Video: `public/videos/loader.mp4` (montage kinetik, 3 dtk, 720p, tanpa audio, fade in/out). Loader selesai mengikuti event `ended` video; fallback timeout 4.5 dtk; reduced-motion → teks saja 0.7 dtk. Muncul setiap refresh. Reveal ala Onoera: nav + routes tidak di-mount sebelum intro selesai, lalu fade-in kalem (1.3–1.6 dtk, geser ≤20px, stagger) berbarengan dengan overlay yang terangkat 1.2 dtk.
 - **Transisi antar halaman = 3D morph:** kamera WebGL terbang/bertransisi ke state halaman tujuan + konten lama fade-out → konten baru fade-in. Di mobile: morph disederhanakan (crossfade + sedikit pergerakan kamera) demi 60fps.
 
 ## 2. Pola curian dari 5 referensi
@@ -107,7 +107,7 @@ src/
     Nav.tsx               → navigasi minimal antar halaman
     Footer.tsx
     Reveal.tsx            → helper reveal kinetik
-    Loader.tsx            → loader persen ala inspirux
+    Loader.tsx            → loader video + frame counter ala Lallé
   styles/tokens.css       → 2 warna + 2 font + base
 ```
 
