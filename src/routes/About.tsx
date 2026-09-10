@@ -1,8 +1,12 @@
+import { useEffect, useMemo, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import Footer from '../components/Footer';
-import SelectedWorks from '../components/SelectedWorks';
 import { TLink } from '../lib/transition';
+
+gsap.registerPlugin(ScrollTrigger);
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -25,27 +29,95 @@ function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }
   );
 }
 
+/**
+ * Dua baris raksasa konvergen dari sisi berlawanan mengikuti scroll —
+ * meniru mesin Inspirux (GSAP scrub, x ±% → 0).
+ */
+function DriftLines({
+  lineA,
+  lineB,
+  className = '',
+}: {
+  lineA: ReactNode;
+  lineB: ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const aRef = useRef<HTMLSpanElement>(null);
+  const bRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!ref.current || !aRef.current || !bRef.current) return;
+    const mm = gsap.matchMedia();
+    const drift = (amt: string) => {
+      gsap
+        .timeline({
+          scrollTrigger: {
+            trigger: ref.current,
+            start: 'top bottom',
+            end: 'top 30%',
+            scrub: 1,
+          },
+        })
+        .fromTo(aRef.current, { x: `-${amt}` }, { x: '0%', ease: 'none' }, 0)
+        .fromTo(bRef.current, { x: amt }, { x: '0%', ease: 'none' }, 0);
+    };
+    mm.add('(min-width: 768px)', () => drift('35%'));
+    mm.add('(max-width: 767px)', () => drift('12%'));
+    return () => {
+      mm.revert();
+    };
+  }, []);
+
+  return (
+    <div ref={ref} className="whitespace-nowrap">
+      <span ref={aRef} className={`block will-change-transform ${className}`}>
+        {lineA}
+      </span>
+      <span ref={bRef} className={`block will-change-transform ${className}`}>
+        {lineB}
+      </span>
+    </div>
+  );
+}
+
 const CAPABILITIES: [string, string[]][] = [
   ['Design', ['Art Direction', 'Landing Pages', 'Typography', 'Design Systems']],
   ['Develop', ['React', 'Three.js / WebGL', 'GSAP', 'Tailwind']],
 ];
 
 export default function About() {
+  const reduced = useMemo(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    [],
+  );
+
   return (
     <>
-      <section className="px-5 md:px-10 pt-32 md:pt-44">
+      <section className="px-5 md:px-10 pt-32 md:pt-44 overflow-x-clip">
         <Meta>[ about ]</Meta>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.6, ease: [...EASE] }}
-          className="mt-8 font-sans font-semibold uppercase tracking-[-0.03em] leading-[0.88] text-[clamp(3rem,11vw,10rem)]"
-        >
-          halo, aku
-          <br />
-          wah<span className="text-bone/40">.</span>
-        </motion.h1>
+        <h1 className="mt-8 font-sans font-semibold uppercase tracking-[-0.03em] leading-[0.88] text-[clamp(3rem,11vw,10rem)]">
+          <motion.span
+            className="block"
+            initial={reduced ? false : { opacity: 0, x: '-14%' }}
+            animate={{ opacity: 1, x: '0%' }}
+            transition={{ duration: 1.6, ease: [...EASE] }}
+          >
+            halo, aku
+          </motion.span>
+          <motion.span
+            className="block"
+            initial={reduced ? false : { opacity: 0, x: '14%' }}
+            animate={{ opacity: 1, x: '0%' }}
+            transition={{ duration: 1.6, delay: 0.12, ease: [...EASE] }}
+          >
+            wah<span className="text-bone/40">.</span>
+          </motion.span>
+        </h1>
 
         <div className="grid md:grid-cols-12 gap-10 mt-12 md:mt-20">
           <div className="md:col-span-5 md:col-start-7 space-y-6 text-[16px] leading-relaxed text-bone/70">
@@ -69,8 +141,6 @@ export default function About() {
             </Reveal>
           </div>
         </div>
-
-        <SelectedWorks />
 
         {/* capabilities */}
         <div className="grid md:grid-cols-12 gap-10 mt-20 md:mt-32">
@@ -98,12 +168,14 @@ export default function About() {
 
         {/* recognition */}
         <div className="mt-20 md:mt-32 md:ml-[40vw]">
-          <Reveal>
-            <Meta>[ recognition ]</Meta>
-            <p className="mt-6 font-sans font-medium tracking-tight text-[clamp(1.5rem,3.5vw,2.5rem)] text-bone/70">
-              Belum ada —<br />iseng-iseng dulu.
-            </p>
-          </Reveal>
+          <Meta>[ recognition ]</Meta>
+          <div className="mt-6">
+            <DriftLines
+              lineA="Belum ada —"
+              lineB="iseng-iseng dulu."
+              className="font-sans font-medium tracking-tight text-[clamp(1.5rem,3.5vw,2.5rem)] text-bone/70"
+            />
+          </div>
         </div>
 
         {/* colophon */}
