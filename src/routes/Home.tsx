@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { motion, useMotionValue, useSpring } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
 import { TLink } from '../lib/transition';
-import { SELECTED, WORKS, type Work } from '../data/works';
+import { WORKS } from '../data/works';
 import { useSceneSections } from '../hooks/useSceneSections';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -56,66 +56,209 @@ function ManifestoScrub({ text }: { text: string }) {
   );
 }
 
-/* ---------- full index + preview melayang mengikuti kursor (desktop) ---------- */
-function FullIndex() {
-  const [active, setActive] = useState<Work | null>(null);
-  const [fine] = useState(() =>
-    typeof window !== 'undefined' ? window.matchMedia('(pointer: fine)').matches : false,
-  );
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-  const sx = useSpring(x, { stiffness: 160, damping: 22, mass: 0.6 });
-  const sy = useSpring(y, { stiffness: 160, damping: 22, mass: 0.6 });
+/* ---------- works grid ala Grégory Lallé: kolase + spotlight + overlay ---------- */
+const ASPECTS = [
+  'aspect-[4/5]',
+  'aspect-square',
+  'aspect-[4/3]',
+  'aspect-[3/4]',
+  'aspect-[16/11]',
+  'aspect-[1/1]',
+];
+
+function Works() {
+  const [focus, setFocus] = useState<number | null>(null);
+  const [open, setOpen] = useState<number | null>(null);
+  const active = open !== null ? WORKS[open] : null;
+
+  // kunci scroll halaman saat overlay dibuka (App mendengarkan event ini)
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('works-overlay', { detail: { open: open !== null } }));
+  }, [open ]);
+
+  // keyboard: esc tutup, panah pindah karya
+  useEffect(() => {
+    if (open === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(null);
+      if (e.key === 'ArrowRight') setOpen((o) => (o === null ? o : (o + 1) % WORKS.length));
+      if (e.key === 'ArrowLeft') setOpen((o) => (o === null ? o : (o - 1 + WORKS.length) % WORKS.length));
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open ]);
 
   return (
-    <section
-      data-scene={1}
-      className="px-5 md:px-10 pt-28 md:pt-40"
-      onMouseMove={(e) => {
-        x.set(e.clientX);
-        y.set(e.clientY);
-      }}
-      onMouseLeave={() => setActive(null)}
-    >
-      <div className="flex items-end justify-between mb-8">
-        <Meta>[ full index ]</Meta>
-        <Meta>( 011 )</Meta>
+    <section data-scene={1} className="relative px-5 md:px-10 pt-28 md:pt-40">
+      <div className="flex items-end justify-between mb-10 md:mb-16">
+        <h2 className="font-sans font-semibold uppercase tracking-[-0.03em] leading-[0.85] text-[clamp(2.8rem,9vw,8rem)]">
+          works
+        </h2>
+        <Meta className="pb-2">( 011 )</Meta>
       </div>
 
-      {fine && active?.thumb && (
-        <motion.div
-          aria-hidden
-          className="fixed left-0 top-0 z-30 pointer-events-none hidden lg:block"
-          style={{ x: sx, y: sy }}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.25 }}
-        >
-          <div className="-translate-x-1/2 -translate-y-[112%] w-64 aspect-[4/3] overflow-hidden border border-bone/25 bg-void">
-            <img src={active.thumb} alt="" className="img-mono w-full h-full object-cover" />
-          </div>
-        </motion.div>
-      )}
-
-      <div className="border-t border-bone/15">
-        {WORKS.map((w) => (
-          <a
-            key={w.index}
-            href={w.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onMouseEnter={() => setActive(w)}
-            onFocus={() => setActive(w)}
-            className="group grid grid-cols-[3rem_1fr_auto] md:grid-cols-[5rem_1fr_1fr_5rem_3rem] items-center gap-3 md:gap-6 py-4 md:py-5 border-b border-bone/15 transition-colors duration-300 hover:bg-bone hover:text-void px-1 md:px-3"
+      <div className="grid md:grid-cols-12 gap-8 md:gap-6">
+        {/* rel judul: hover/tap = spotlight */}
+        <div className="md:col-span-3">
+          <div
+            className="md:sticky md:top-24 flex md:flex-col gap-x-6 gap-y-1 overflow-x-auto md:overflow-visible pb-3 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0"
+            onMouseLeave={() => setFocus(null)}
           >
-            <span className="font-mono text-[11px] text-bone/40 group-hover:text-void/50">{w.index}</span>
-            <span className="font-sans font-medium uppercase tracking-tight text-xl md:text-3xl">{w.title}</span>
-            <span className="hidden md:block font-mono text-[11px] uppercase tracking-[0.16em] text-bone/50 group-hover:text-void/60">{w.category}</span>
-            <span className="hidden md:block font-mono text-[11px] text-bone/50 group-hover:text-void/60">({w.year})</span>
-            <span className="font-sans text-lg justify-self-end transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1">↗</span>
-          </a>
-        ))}
+            {WORKS.map((w, i) => {
+              const on = focus === i;
+              return (
+                <button
+                  key={w.index}
+                  onMouseEnter={() => setFocus(i)}
+                  onFocus={() => setFocus(i)}
+                  onClick={() => setFocus(focus === i ? null : i)}
+                  aria-pressed={on}
+                  className={`group flex items-baseline gap-2.5 whitespace-nowrap text-left py-1 transition-all duration-300 cursor-pointer shrink-0 ${
+                    on ? 'text-bone md:translate-x-1.5' : 'text-bone/35 hover:text-bone/80'
+                  }`}
+                >
+                  <span className={`font-mono text-[10px] ${on ? 'text-bone' : 'text-bone/30'}`}>
+                    {w.index}
+                  </span>
+                  <span className="font-sans font-medium tracking-tight text-[15px] md:text-[17px]">
+                    {on ? `[ ${w.title} ]` : w.title}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <Meta className="md:hidden mt-1">tap judul = sorot · tap gambar = buka</Meta>
+        </div>
+
+        {/* kolase flowing */}
+        <div className="md:col-span-9 columns-2 lg:columns-3 gap-3 md:gap-4">
+          {WORKS.map((w, i) => (
+            <motion.div
+              key={w.index}
+              initial={{ opacity: 0, y: 40 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: '-40px' }}
+              transition={{ duration: 0.8, ease: [...EASE] }}
+              className="break-inside-avoid mb-3 md:mb-5"
+            >
+              <button
+                onClick={() => setOpen(i)}
+                aria-label={`${w.title} — buka focus view`}
+                className={`group block w-full text-left cursor-pointer transition-opacity duration-500 ${
+                  focus === null || focus === i ? 'opacity-100' : 'opacity-[0.12]'
+                }`}
+              >
+                <span className={`relative block overflow-hidden bg-[#141412] ${ASPECTS[i % ASPECTS.length]}`}>
+                  <img
+                    src={w.thumb}
+                    alt={w.title}
+                    loading="lazy"
+                    className="img-mono w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                  />
+                  <span className="absolute top-2 left-2 font-mono text-[10px] tracking-[0.14em] bg-void/70 px-1.5 py-0.5 text-bone/80">
+                    {w.index}
+                  </span>
+                </span>
+                <span className="block pt-2 pb-1">
+                  <span className="block font-sans font-medium tracking-tight text-[15px] md:text-base leading-tight">
+                    {w.title}
+                  </span>
+                  <span className="block mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-bone/45">
+                    {w.category}
+                  </span>
+                </span>
+              </button>
+            </motion.div>
+          ))}
+        </div>
       </div>
+
+      {/* focus overlay */}
+      <AnimatePresence>
+        {active && open !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35 }}
+            className="fixed inset-0 z-[80] bg-void/[0.97] overflow-y-auto"
+            data-lenis-prevent
+            role="dialog"
+            aria-modal="true"
+            aria-label={active.title}
+            onClick={() => setOpen(null)}
+          >
+            <div
+              className="min-h-full max-w-[1400px] mx-auto px-5 md:px-10 py-5 md:py-8 flex flex-col"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.18em] text-bone/60">
+                <span>
+                  [ {active.index} / 011 ]
+                </span>
+                <button
+                  onClick={() => setOpen(null)}
+                  className="hover:text-bone transition-colors cursor-pointer tracking-[0.18em]"
+                >
+                  tutup ×
+                </button>
+              </div>
+
+              <motion.div
+                key={active.index}
+                initial={{ opacity: 0, scale: 0.97, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: [...EASE] }}
+                className="mt-5 md:mt-8"
+              >
+                <div className="overflow-hidden bg-[#141412]">
+                  <img
+                    src={active.thumb}
+                    alt={active.title}
+                    className="img-mono w-full max-h-[52vh] md:max-h-[58vh] object-cover"
+                  />
+                </div>
+                <h3 className="mt-6 font-sans font-semibold uppercase tracking-tight leading-[0.9] text-[clamp(2.2rem,7vw,5.5rem)]">
+                  {active.title}
+                </h3>
+                <p className="mt-4 text-[15px] md:text-base text-bone/65 max-w-[52ch] leading-relaxed">
+                  {active.blurb}
+                </p>
+                <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-bone/45">
+                  {active.category} — {active.year}
+                </p>
+                <div className="mt-8 flex flex-wrap items-center gap-x-10 gap-y-4 pb-10">
+                  <a
+                    href={active.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group font-sans font-medium text-lg underline underline-offset-8 decoration-bone/30 hover:decoration-bone transition-all"
+                  >
+                    visit live site{' '}
+                    <span className="inline-block transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">
+                      ↗
+                    </span>
+                  </a>
+                  <div className="flex items-center gap-6 font-mono text-[11px] uppercase tracking-[0.18em]">
+                    <button
+                      onClick={() => setOpen((open - 1 + WORKS.length) % WORKS.length)}
+                      className="text-bone/50 hover:text-bone transition-colors cursor-pointer"
+                    >
+                      [ ← prev ]
+                    </button>
+                    <button
+                      onClick={() => setOpen((open + 1) % WORKS.length)}
+                      className="text-bone/50 hover:text-bone transition-colors cursor-pointer"
+                    >
+                      [ next → ]
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
@@ -146,7 +289,7 @@ export default function Home() {
           anggaaa
         </motion.h1>
 
-        {/* role line menabrak nama */}
+        {/* role line menabrak nama (desktop saja) */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
@@ -195,79 +338,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ============ SELECTED WORKS — staggered collage ============ */}
-      <section data-scene={1} className="relative px-5 md:px-10 pt-28 md:pt-40">
-        <div className="flex items-end justify-between mb-12 md:mb-20">
-          <h2 className="font-sans font-semibold uppercase tracking-[-0.03em] leading-[0.85] text-[clamp(2.8rem,9vw,8rem)]">
-            selected<br />works
-          </h2>
-          <Meta className="pb-2">[ 001 — 005 ]</Meta>
-        </div>
-
-        <div className="flex flex-col gap-24 md:gap-40">
-          {SELECTED.map((w, i) => {
-            const flip = i % 2 === 1;
-            return (
-              <motion.a
-                key={w.index}
-                href={w.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-80px' }}
-                transition={{ duration: 0.9, ease: [...EASE] }}
-                className={`group relative block ${
-                  flip ? 'md:ml-[18vw]' : 'md:mr-[18vw]'
-                } ${i === 2 ? 'md:mx-[8vw]' : ''}`}
-              >
-                {/* nomor raksasa di belakang */}
-                <span
-                  aria-hidden
-                  className={`text-stroke pointer-events-none select-none absolute -top-[0.55em] z-10 font-sans font-semibold leading-none text-[clamp(5rem,14vw,12rem)] opacity-60 ${
-                    flip ? '-left-2 md:-left-10' : '-right-2 md:-right-10'
-                  }`}
-                >
-                  {w.index}
-                </span>
-
-                <div className="relative overflow-hidden bg-[#141412]">
-                  {w.thumb ? (
-                    <div className="relative w-full aspect-[4/3] md:aspect-[16/9] overflow-hidden">
-                      <div className="work-parallax absolute inset-x-0 -top-[8%] h-[116%]">
-                        <img
-                          src={w.thumb}
-                          alt={w.title}
-                          loading="lazy"
-                          className="img-mono w-full h-full object-cover opacity-80 transition-[opacity,scale] duration-700 group-hover:opacity-100 group-hover:scale-[1.03]"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="w-full aspect-[4/3] md:aspect-[16/9] flex items-center justify-center px-6">
-                      <span className="font-sans font-semibold uppercase tracking-tight text-center leading-none text-[clamp(2.5rem,8vw,7rem)] text-bone/90">
-                        {w.title}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* judul menabrak gambar */}
-                <div className={`relative z-10 -mt-6 md:-mt-10 ${flip ? 'text-right' : ''}`}>
-                  <h3 className="inline-block bg-void/85 px-1 font-sans font-semibold uppercase tracking-tight leading-none text-[clamp(2rem,6.5vw,5.5rem)]">
-                    {w.title}
-                  </h3>
-                  <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50">
-                    {w.category} — {w.year} <span className="text-bone">↗</span>
-                  </p>
-                </div>
-              </motion.a>
-            );
-          })}
-        </div>
-      </section>
-
-      <FullIndex />
+      <Works />
 
       {/* ============ MANIFESTO ============ */}
       <section data-scene={2} className="px-5 md:px-10 pt-32 md:pt-48 pb-8">

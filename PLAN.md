@@ -44,10 +44,9 @@
 
 ### `/` — Landing (freeform collage)
 1. **Hero** — nama raksasa overlap dengan visual, role `Designer & Creative Developer`, label `[ just for fun ]` + `[ jakarta — wib ]`, CTA ke `/contact`. State 3D: A.
-2. **Selected Works** — 5 karya pilihan, susunan staggered & overlap, nomor index, hover preview. State 3D: B.
-3. **Full index `(011)`** — daftar kompak semua 11 karya di bawah selected (masih satu blok, gaya archive kavieng). Bukan section baru.
-4. **Manifesto** — 2–4 kalimat, reveal kata-per-kata mengikuti scroll. State 3D: C.
-5. **Footer minimal** — link `/about` + `/contact`, timezone, `© 2026`.
+2. **Works grid (ala Grégory Lallé)** — 11 thumbnail dalam satu kolase flowing (masonry CSS) + rel judul; hover/tap judul = spotlight (lainnya meredup); klik sel = focus overlay fullscreen (preview besar + blurb + visit + prev/next + keyboard). State 3D: B.
+3. **Manifesto** — 2–4 kalimat, reveal kata-per-kata mengikuti scroll. State 3D: C.
+4. **Footer minimal** — link `/about` + `/contact`, timezone, `© 2026`.
 
 ### `/about` — Halaman sendiri (ritme tenang, TANPA foto)
 Bio tipografis + daftar capabilities + selected press/recognition (placeholder) + daftar tools/stack. Tidak ada portrait, tidak ada bulan.

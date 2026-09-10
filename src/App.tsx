@@ -87,6 +87,17 @@ function Shell() {
     }
   }, [entered]);
 
+  // kunci scroll halaman saat focus overlay works dibuka
+  useEffect(() => {
+    const onOverlay = (e: Event) => {
+      const open = (e as CustomEvent<{ open: boolean }>).detail.open;
+      if (open) lenisRef.current?.stop();
+      else if (entered) lenisRef.current?.start();
+    };
+    window.addEventListener('works-overlay', onOverlay);
+    return () => window.removeEventListener('works-overlay', onOverlay);
+  }, [entered]);
+
   // preload chunk route + scene sejak awal → reveal tanpa jeda
   useEffect(() => {
     import('./routes/Home').catch(() => {});
