@@ -182,12 +182,20 @@ function Works() {
                   }`}
                 >
                   <span className={`relative block overflow-hidden bg-[#141412] aspect-[16/10] ${ASPECTS_MD[i % ASPECTS_MD.length]}`}>
+                    <span
+                      aria-hidden
+                      className="img-mono absolute inset-0 bg-cover bg-center scale-105"
+                      style={{ backgroundImage: `url(${w.blur})` }}
+                    />
                     <img
                       src={w.thumb}
                       alt={w.title}
                       loading="lazy"
                       decoding="async"
-                      className="img-mono w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                      onLoad={(e) => {
+                        e.currentTarget.style.opacity = '1';
+                      }}
+                      className="img-mono relative w-full h-full object-cover opacity-0 transition-[opacity,transform] duration-700 group-hover:scale-[1.04]"
                     />
                     <span className="absolute top-2 left-2 font-mono text-[10px] tracking-[0.14em] bg-void/70 px-1.5 py-0.5 text-bone/80">
                       {w.index}
@@ -247,11 +255,19 @@ function Works() {
                 transition={{ duration: 0.6, ease: [...EASE] }}
                 className="mt-5 md:mt-8"
               >
-                <div className="overflow-hidden bg-[#141412]">
+                <div className="relative overflow-hidden bg-[#141412] min-h-[36vh]">
+                  <span
+                    aria-hidden
+                    className="img-mono absolute inset-0 bg-cover bg-center scale-105"
+                    style={{ backgroundImage: `url(${active.blur})` }}
+                  />
                   <img
                     src={active.thumb}
                     alt={active.title}
-                    className="img-mono w-full max-h-[52vh] md:max-h-[58vh] object-cover"
+                    onLoad={(e) => {
+                      e.currentTarget.style.opacity = '1';
+                    }}
+                    className="img-mono relative w-full max-h-[52vh] md:max-h-[58vh] object-cover opacity-0 transition-opacity duration-700"
                   />
                 </div>
                 <h3 className="mt-6 font-sans font-semibold uppercase tracking-tight leading-[0.9] text-[clamp(2.2rem,7vw,5.5rem)]">

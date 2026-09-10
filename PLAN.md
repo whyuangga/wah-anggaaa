@@ -54,7 +54,7 @@ Bio tipografis + daftar capabilities + selected press/recognition (placeholder) 
 ### `/contact` — Halaman sendiri (kasual, placeholder)
 Judul besar "say hi" + email placeholder + social links placeholder + info base/timezone. Tanpa form (mailto + links).
 
-## 5. Daftar karya final (11) — milik user, hotlink ke pages.dev
+## 5. Daftar karya final (11) — milik user, thumbnail self-hosted
 
 | # | Judul | Kategori | URL |
 |---|---|---|---|
@@ -73,7 +73,7 @@ Judul besar "say hi" + email placeholder + social links placeholder + info base/
 - **Selected (landing collage):** 001–005 (kurasi: variasi kategori terkuat — typo, high jewelry, fashion, watch, storytelling).
 - **Full index:** 001–011.
 - **Tahun:** `'26` untuk semua (koleksi 2026; koreksi jika ada yang beda).
-- **Thumbnail:** hotlink gambar dari tiap situs (user pemiliknya) dengan filter **grayscale permanen** agar tetap dalam aturan 2 warna. Jika hotlink gagal → fallback blok tipografis bernomor.
+- **Thumbnail:** webp self-hosted (`public/images/works/`, maks 1200px) + placeholder blur data-URI dengan filter **grayscale permanen** agar tetap dalam aturan 2 warna.
 
 ## 6. Motion system (harus mulus di desktop & mobile)
 

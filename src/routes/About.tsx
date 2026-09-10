@@ -11,6 +11,19 @@ function Meta({ children }: { children: ReactNode }) {
   );
 }
 
+function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 32 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.9, delay, ease: [...EASE] }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 const CAPABILITIES: [string, string[]][] = [
   ['Design', ['Art Direction', 'Landing Pages', 'Typography', 'Design Systems']],
   ['Develop', ['React', 'Three.js / WebGL', 'GSAP', 'Tailwind']],
@@ -35,18 +48,24 @@ export default function About() {
 
         <div className="grid md:grid-cols-12 gap-10 mt-12 md:mt-20">
           <div className="md:col-span-5 md:col-start-7 space-y-6 text-[16px] leading-relaxed text-bone/70">
-            <p>
-              <span className="text-bone">wah:anggaaa adalah taman bermain satu orang</span>{' '}
-              milik Angga — designer &amp; creative developer dari Jakarta.
-            </p>
-            <p>
-              Siang mengerjakan yang beneran, malam merawat yang iseng-iseng:
-              brand fiktif, tipografi rusak, dan landing page yang tidak diminta
-              siapa pun. Sebelas dunia kecil sejauh ini — dan masih nambah.
-            </p>
-            <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-bone/45">
-              [ no client work here — just for fun ]
-            </p>
+            <Reveal>
+              <p>
+                <span className="text-bone">wah:anggaaa adalah taman bermain satu orang</span>{' '}
+                milik Angga — designer &amp; creative developer dari Jakarta.
+              </p>
+            </Reveal>
+            <Reveal delay={0.1}>
+              <p>
+                Siang mengerjakan yang beneran, malam merawat yang iseng-iseng:
+                brand fiktif, tipografi rusak, dan landing page yang tidak diminta
+                siapa pun. Sebelas dunia kecil sejauh ini — dan masih nambah.
+              </p>
+            </Reveal>
+            <Reveal delay={0.2}>
+              <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-bone/45">
+                [ no client work here — just for fun ]
+              </p>
+            </Reveal>
           </div>
         </div>
 
@@ -57,46 +76,54 @@ export default function About() {
           </Meta>
           {CAPABILITIES.map(([group, items], gi) => (
             <div key={group} className={`md:col-span-4 ${gi === 0 ? 'md:col-start-3' : ''}`}>
-              <p className="font-sans font-medium text-xl mb-5">{group}</p>
-              <ul className="border-t border-bone/15">
-                {items.map((item) => (
-                  <li
-                    key={item}
-                    className="py-4 border-b border-bone/15 font-mono text-[12px] uppercase tracking-[0.16em] text-bone/60"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              <Reveal delay={gi * 0.12}>
+                <p className="font-sans font-medium text-xl mb-5">{group}</p>
+                <ul className="border-t border-bone/15">
+                  {items.map((item) => (
+                    <li
+                      key={item}
+                      className="py-4 border-b border-bone/15 font-mono text-[12px] uppercase tracking-[0.16em] text-bone/60"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </Reveal>
             </div>
           ))}
         </div>
 
         {/* recognition */}
         <div className="mt-20 md:mt-32 md:ml-[40vw]">
-          <Meta>[ recognition ]</Meta>
-          <p className="mt-6 font-sans font-medium tracking-tight text-[clamp(1.5rem,3.5vw,2.5rem)] text-bone/70">
-            Belum ada —<br />iseng-iseng dulu.
-          </p>
+          <Reveal>
+            <Meta>[ recognition ]</Meta>
+            <p className="mt-6 font-sans font-medium tracking-tight text-[clamp(1.5rem,3.5vw,2.5rem)] text-bone/70">
+              Belum ada —<br />iseng-iseng dulu.
+            </p>
+          </Reveal>
         </div>
 
         {/* colophon */}
         <div className="mt-20 md:mt-32">
-          <Meta>[ colophon ]</Meta>
-          <div className="mt-6 grid sm:grid-cols-3 gap-6 font-mono text-[12px] uppercase tracking-[0.16em] text-bone/60">
-            <p>type — general sans + ibm plex mono</p>
-            <p>color — #0d0d0c + #eae8e1</p>
-            <p>built — react + three.js + gsap</p>
-          </div>
+          <Reveal>
+            <Meta>[ colophon ]</Meta>
+            <div className="mt-6 grid sm:grid-cols-3 gap-6 font-mono text-[12px] uppercase tracking-[0.16em] text-bone/60">
+              <p>type — general sans + ibm plex mono</p>
+              <p>color — #0d0d0c + #eae8e1</p>
+              <p>built — react + three.js + gsap</p>
+            </div>
+          </Reveal>
         </div>
 
         <div className="mt-16 md:mt-24">
-          <TLink
-            to="/contact"
-            className="group font-sans font-medium text-lg underline underline-offset-8 decoration-bone/30 hover:decoration-bone transition-all"
-          >
-            <>say hi <span className="inline-block transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">↗</span></>
-          </TLink>
+          <Reveal>
+            <TLink
+              to="/contact"
+              className="group font-sans font-medium text-lg underline underline-offset-8 decoration-bone/30 hover:decoration-bone transition-all"
+            >
+              <>say hi <span className="inline-block transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">↗</span></>
+            </TLink>
+          </Reveal>
         </div>
       </section>
 

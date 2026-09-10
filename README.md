@@ -100,17 +100,22 @@ dengan fallback `prefers-reduced-motion`.
 
 - Satu instance Lenis global menghaluskan scroll roda mouse; di perangkat
   sentuh dibuat ringan agar scroll native tetap jujur.
-- Setiap frame Lenis menulis ke `sceneBus`: `progress` (0..1) dan `velocity`
-  scroll — dibaca langsung oleh shader tanpa me-re-render React.
+- Umpan shader (`sceneBus`): `progress` (0..1) dan `velocity` scroll ditulis
+  dari listener scroll **native** — bukan dari Lenis — agar reaktif juga di
+  perangkat sentuh (`syncTouch: false` membuat Lenis tak memancarkan event
+  saat scroll native). Velocity meluruh ke nol tiap frame via rAF.
 - Scroll dikunci (`lenis.stop()`) saat focus overlay works dibuka, lewat
   CustomEvent `works-overlay` yang didengar App.
 
 ### 2. GSAP ScrollTrigger — scrub kata & scroll-spy
 
-- **Manifesto scrub** (`ManifestoScrub`): satu ScrollTrigger `scrub: true`
-  memetakan progres scroll ke opacity tiap kata via mutasi `style` langsung
-  (tanpa state React → 60fps). Rentang `top 85% → top 35%` dipilih agar
-  progres **selalu mencapai 100%** di layar pendek mobile.
+- **Manifesto scrub** (`ManifestoScrub`): loop rAF mengukur posisi paragraf
+  **live tiap frame** (`getBoundingClientRect`) lalu memetakan ke opacity
+  tiap kata via mutasi `style` langsung (tanpa state React → 60fps).
+  Pengukuran live dipilih karena trigger persenan yang dihitung sekali
+  terbukti rapuh di mobile (toolbar Chrome mengubah tinggi viewport saat
+  scroll → tiang gawang bergeser). Rentang atas-paragraf `90% → 60%` layar
+  selalu reachable (butuh konten bawah ≥40% viewport).
 - **Scroll-spy works (mobile)**: 11 ScrollTrigger `onToggle` (khusus
   `pointer: coarse`) menggerakkan state `focus` yang sama dengan hover
   desktop — spotlight mengikuti gambar yang sedang terlihat.
@@ -200,6 +205,8 @@ dan loader-nya.
 ├── vercel.json              → rewrite SPA /about & /contact
 ├── public/
 │   ├── _redirects           → (cadangan redirect SPA)
+│   ├── og.jpg               → preview share sosial 1200×630 (monokrom)
+│   ├── images/works/        → 11 thumbnail webp self-hosted (±896KB total)
 │   └── videos/loader.mp4    → video intro kinetik ±3 dtk (720p, tanpa audio)
 └── src/
     ├── main.tsx             → entry: Router + Lenis + Scene + Loader gate
@@ -215,9 +222,10 @@ dan loader-nya.
     │   └── Footer.tsx       → footer raksasa + jam Jakarta + status fun
     ├── routes/
     │   ├── Home.tsx         → hero + Works (Lallé grid/spotlight/overlay) + manifesto scrub
-    │   ├── About.tsx        → profil + capability + kolofon
-    │   └── Contact.tsx      → email placeholder + sosial + jam live
-    ├── data/works.ts        → 11 karya: judul, kategori, tahun, thumb, blurb, url
+    │   ├── About.tsx        → profil + capability + kolofon (scroll-reveal)
+    │   ├── Contact.tsx      → email placeholder + sosial + jam live
+    │   └── NotFound.tsx     → halaman 404 ("nyasar.")
+    ├── data/works.ts        → 11 karya: judul, kategori, tahun, thumb lokal, blur, blurb, url
     ├── hooks/
     │   ├── useSceneSections.ts → ScrollTrigger → section aktif ke sceneBus
     │   └── useJakartaTime.ts   → jam WIB live per detik
@@ -225,9 +233,9 @@ dan loader-nya.
     └── assets/fonts/        → 5 file woff2 self-hosted
 ```
 
-Alur data animasi: `Lenis/ScrollTrigger/rAF → sceneBus (mutable, tanpa
-re-render) → uniform shader per frame`. React state hanya untuk UI diskrit
-(focus works, overlay open, route).
+Alur data animasi: `scroll native/ScrollTrigger/rAF → sceneBus (mutable,
+tanpa re-render) → uniform shader per frame`. React state hanya untuk UI
+diskrit (focus works, overlay open, route).
 
 ---
 
@@ -266,8 +274,11 @@ Satu codebase, dua target — dibedakan otomatis oleh `vite.config.ts`:
   otomatis bila frame > 26ms (EMA).
 - Works mobile tanpa CSS multicol (1 kolom flex) — multicol + gambar adalah
   biang jank scroll Android.
-- Gambar: `loading="lazy"` + `decoding="async"` + boks aspect-ratio (nol
-  layout shift) + `object-cover` landscape agar crop og-image aman.
+- Gambar: webp self-hosted (maks 1200px, q80) + placeholder blur mungil
+  (~1KB data URI) yang fade ke gambar tajam saat `onLoad` + `loading="lazy"`
+  + `decoding="async"` + boks aspect-ratio (nol layout shift).
+- Meta share: `og:*` + `twitter:card` + canonical menunjuk domain Vercel
+  (URL absolut → valid dari kedua platform deploy).
 - Scrub manifesto & counter loader memakai mutasi DOM langsung, bukan state
   React — PMK (paint murah, kompozitor kenyang).
 - Font self-hosted woff2: tanpa render-blocking pihak ketiga.

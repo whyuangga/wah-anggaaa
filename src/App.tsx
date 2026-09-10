@@ -14,6 +14,7 @@ gsap.registerPlugin(ScrollTrigger);
 const Home = lazy(() => import('./routes/Home'));
 const About = lazy(() => import('./routes/About'));
 const Contact = lazy(() => import('./routes/Contact'));
+const NotFound = lazy(() => import('./routes/NotFound'));
 const Scene = lazy(() => import('./canvas/Scene'));
 
 /** Sinkron route → bus scene + scroll atas + refresh trigger. */
@@ -53,11 +54,36 @@ function Shell() {
     });
     lenisRef.current = lenis;
 
-    lenis.on('scroll', (e: Lenis) => {
+    lenis.on('scroll', () => {
       ScrollTrigger.update();
-      sceneBus.progress = e.progress ?? 0;
-      sceneBus.velocity = e.velocity ?? 0;
     });
+
+    // Umpan shader dari scroll NATIVE (satu-satunya sumber progress/velocity):
+    // Lenis + syncTouch:false tak memancarkan event saat scroll sentuh, dan di
+    // desktop pun Lenis menggerakkan window scroll asli → tercakup juga.
+    let lastY = window.scrollY;
+    let lastT = performance.now();
+    const onNativeScroll = () => {
+      const y = window.scrollY;
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      sceneBus.progress = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
+      const now = performance.now();
+      const dt = Math.max(1, now - lastT);
+      const v = ((y - lastY) / dt) * 16.7; // px per frame (se-skala Lenis)
+      sceneBus.velocity = Math.max(-60, Math.min(60, v));
+      lastY = y;
+      lastT = now;
+    };
+    window.addEventListener('scroll', onNativeScroll, { passive: true });
+
+    // velocity meluruh ke nol tiap frame (Scene me-lerp menujunya)
+    let sraf = 0;
+    const decay = () => {
+      sceneBus.velocity *= 0.9;
+      if (Math.abs(sceneBus.velocity) < 0.01) sceneBus.velocity = 0;
+      sraf = requestAnimationFrame(decay);
+    };
+    sraf = requestAnimationFrame(decay);
 
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
@@ -69,6 +95,8 @@ function Shell() {
 
     return () => {
       window.removeEventListener('load', onLoad);
+      window.removeEventListener('scroll', onNativeScroll);
+      cancelAnimationFrame(sraf);
       gsap.ticker.remove(tick);
       lenis.destroy();
       lenisRef.current = null;
@@ -103,6 +131,7 @@ function Shell() {
     import('./routes/Home').catch(() => {});
     import('./routes/About').catch(() => {});
     import('./routes/Contact').catch(() => {});
+    import('./routes/NotFound').catch(() => {});
     import('./canvas/Scene').catch(() => {});
   }, []);
 
@@ -124,7 +153,7 @@ function Shell() {
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
-                <Route path="*" element={<Home />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           )}
