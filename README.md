@@ -92,9 +92,9 @@ lalu overlay terangkat 1,2 detik berbarengan konten fade-in kalem.
 | Font                 | Self-hosted **woff2**: General Sans (400/500/600) + IBM Plex Mono (400/500) |
 | Deploy               | GitHub Pages (Actions build) + Vercel (root) — satu codebase           |
 
-> Catatan: `package.json` juga memuat `express`, `dotenv`, `@google/genai`,
-> dan `tsx` bawaan template — tidak dipakai oleh situsnya sendiri, yang murni
-> static SPA (HTML + JS + CSS + aset).
+> Dependensi template tak terpakai (`express`, `dotenv`, `@google/genai`,
+> `lucide-react`, `tsx`, dll.) sudah dicopot — `package.json` hanya memuat
+> yang dipakai situs. Situsnya sendiri murni static SPA.
 
 ---
 

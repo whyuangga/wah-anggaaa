@@ -37,8 +37,16 @@ export default function Cursor() {
       d.y += (d.ty - d.y) * 0.4;
       r.x += (r.tx - r.x) * 0.16;
       r.y += (r.ty - r.y) * 0.16;
-      dot.style.transform = `translate3d(${d.x.toFixed(1)}px, ${d.y.toFixed(1)}px, 0)`;
-      ring.style.transform = `translate3d(${r.x.toFixed(1)}px, ${r.y.toFixed(1)}px, 0)`;
+      // tulis hanya saat masih bergerak (hemat style recalc saat diam)
+      if (
+        Math.abs(d.tx - d.x) > 0.05 ||
+        Math.abs(d.ty - d.y) > 0.05 ||
+        Math.abs(r.tx - r.x) > 0.05 ||
+        Math.abs(r.ty - r.y) > 0.05
+      ) {
+        dot.style.transform = `translate3d(${d.x.toFixed(1)}px, ${d.y.toFixed(1)}px, 0)`;
+        ring.style.transform = `translate3d(${r.x.toFixed(1)}px, ${r.y.toFixed(1)}px, 0)`;
+      }
       raf = requestAnimationFrame(loop);
     };
     const onMove = (e: MouseEvent) => {

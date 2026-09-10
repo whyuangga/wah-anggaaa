@@ -47,6 +47,9 @@ export function TransitionProvider({ children, contentRef, scrollTop }: Provider
       const tl = gsap.timeline({
         onComplete: () => {
           busyRef.current = false;
+          // bersihkan inline style: sisa transform mengubah containing block
+          // dan merusak elemen fixed (Nav) di dalam konten
+          if (el) gsap.set(el, { clearProps: 'opacity,transform' });
         },
       });
 
@@ -85,9 +88,19 @@ export function TransitionProvider({ children, contentRef, scrollTop }: Provider
     const el = contentRef.current;
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) return;
-    if (el) gsap.fromTo(el, { opacity: 0.2 }, { opacity: 1, duration: 0.45, ease: 'power2.out' });
+    if (el) {
+      gsap.fromTo(
+        el,
+        { opacity: 0.2 },
+        {
+          opacity: 1,
+          duration: 0.45,
+          ease: 'power2.out',
+          onComplete: () => gsap.set(el, { clearProps: 'opacity' }),
+        },
+      );
+    }
     gsap.timeline().to(sceneBus, { morph: 0.4, duration: 0.2 }).to(sceneBus, { morph: 0, duration: 0.5 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   return <GoContext.Provider value={go}>{children}</GoContext.Provider>;
@@ -104,6 +117,8 @@ type TLinkProps = {
 export function TLink({ to, children, className, ariaLabel }: TLinkProps) {
   const go = useGo();
   const onClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    // hormati klik modifier / tombol tengah (buka tab baru)
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
     e.preventDefault();
     go(to);
   };

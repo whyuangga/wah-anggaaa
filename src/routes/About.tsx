@@ -169,9 +169,7 @@ export default function About() {
 
         {/* capabilities */}
         <div className="grid md:grid-cols-12 gap-10 mt-20 md:mt-32">
-          <Meta>
-            <span className="md:col-span-12">[ capabilities ]</span>
-          </Meta>
+          <Meta>[ capabilities ]</Meta>
           {CAPABILITIES.map(([group, items], gi) => (
             <div key={group} className={`md:col-span-4 ${gi === 0 ? 'md:col-start-3' : ''}`}>
               <Reveal delay={gi * 0.12}>

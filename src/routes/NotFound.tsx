@@ -38,7 +38,7 @@ export default function NotFound() {
             to="/"
             className="group inline-block mt-8 font-sans font-medium text-lg underline underline-offset-8 decoration-bone/30 hover:decoration-bone transition-all"
           >
-            <>← balik ke index</>
+            ← balik ke index
           </TLink>
         </motion.div>
       </section>

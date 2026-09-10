@@ -13,6 +13,8 @@ export default function Loader({ onDone }: { onDone: () => void }) {
   return (
     <motion.div
       className="fixed inset-0 z-[100] bg-void flex items-center justify-center"
+      role="status"
+      aria-label="Memuat halaman"
       initial={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } }}
     >
@@ -38,7 +40,11 @@ function LoaderInner({ onDone }: { onDone: () => void }) {
     // posisi awal: angka di kanan-bawah (rumus ala Lallé)
     const measure = () => {
       if (!number) return;
+      // ukur tanpa transform (resize bisa datang saat angka sudah bergeser)
+      const prev = number.style.transform;
+      number.style.transform = '';
       const r = number.getBoundingClientRect();
+      number.style.transform = prev;
       // y agar angka duduk di margin bawah yang sama dengan margin atasnya
       baseYRef.current = Math.max(0, window.innerHeight - r.height - r.top * 2);
     };

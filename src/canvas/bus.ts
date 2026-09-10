@@ -3,13 +3,13 @@
  * transisi), dibaca tiap frame oleh Scene. Tanpa re-render React.
  */
 export const sceneBus = {
-  /** route aktif: '/', '/about', '/contact' */
+  /** route aktif: '/', '/about', '/contact', '/works/:slug' */
   route: '/',
   /** section home yang sedang dominan: 0 hero, 1 works, 2 manifesto */
   section: 0,
-  /** progres scroll halaman 0..1 (dari Lenis) */
+  /** progres scroll halaman 0..1 (dari scroll native, semua perangkat) */
   progress: 0,
-  /** velositas scroll (dari Lenis, diredam di Scene) */
+  /** velositas scroll px/frame (dari scroll native, diluruhkan + diredam) */
   velocity: 0,
   /** warp transisi 0..1 (di-tween oleh GSAP saat pindah halaman) */
   morph: 0,

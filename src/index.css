@@ -95,11 +95,6 @@ html.lenis body {
 }
 
 /* ---- helpers (monochrome only) ---- */
-.text-stroke {
-  -webkit-text-stroke: 1px rgba(234, 232, 225, 0.4);
-  color: transparent;
-}
-
 .img-mono {
   filter: grayscale(1) contrast(1.06);
 }

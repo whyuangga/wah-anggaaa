@@ -12,6 +12,7 @@ export default function Footer() {
   const time = useJakartaTime();
   const status = useStudioStatus();
   const wordRef = useRef<HTMLSpanElement>(null);
+  const shownRef = useRef(false);
   const reduced = useMemo(
     () =>
       typeof window !== 'undefined' &&
@@ -19,9 +20,10 @@ export default function Footer() {
     [],
   );
 
-  // gelombang hover: huruf-huruf melompat berurutan (desktop)
+  // gelombang hover: huruf-huruf melompat berurutan (desktop).
+  // Ditahan sampai cascade entrance selesai (anti-rebutan transform).
   const wave = () => {
-    if (reduced) return;
+    if (reduced || !shownRef.current) return;
     const el = wordRef.current;
     if (!el) return;
     gsap.fromTo(
@@ -46,6 +48,12 @@ export default function Footer() {
           initial={reduced ? false : 'hidden'}
           whileInView="show"
           viewport={{ once: true, margin: '-40px' }}
+          onViewportEnter={() => {
+            // cascade ±1,4 dtk → wave diizinkan setelahnya
+            setTimeout(() => {
+              shownRef.current = true;
+            }, 1600);
+          }}
           variants={{ show: { transition: { staggerChildren: 0.045, delayChildren: 0.1 } } }}
           className="block font-sans font-semibold uppercase tracking-[-0.03em] leading-[0.85] text-[clamp(3rem,12vw,12rem)] whitespace-nowrap hover:opacity-80 transition-opacity"
         >

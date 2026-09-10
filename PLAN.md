@@ -95,15 +95,16 @@ Judul besar "say hi" + email placeholder + social links placeholder + info base/
 ```
 src/
   App.tsx                 → router + kanvas global + transisi halaman
-  data/works.ts           → 11 karya (judul, kategori, tahun, url, thumb)
+  data/works.ts           → 11 karya (meta + thumb/blur + slug + story + stats)
   routes/
-    Home.tsx              → Hero + SelectedWorks + FullIndex + Manifesto (freeform)
+    Home.tsx              → Hero + Works grid + Manifesto (freeform)
     About.tsx             → bio + drift horizontal ala Inspirux + capabilities
     Contact.tsx           → say hi + placeholder links + generator brand
     WorkCase.tsx          → case-study per karya (/works/:slug)
   canvas/
-    Scene.tsx             → satu Three.js canvas + state A/B/C
-    shaders/              → GLSL (jika perlu)
+    Scene.tsx             → satu kanvas fullscreen + adaptive quality
+    shaders.ts            → GLSL fbm monokrom (uniform uOct adaptif)
+    bus.ts                → sceneBus mutable React → shader
   components/
     Nav.tsx               → navigasi minimal antar halaman
     Footer.tsx
