@@ -25,21 +25,29 @@ function ManifestoScrub({ text }: { text: string }) {
     const el = ref.current;
     if (!el) return;
     const spans = Array.from(el.querySelectorAll('[data-w]')) as HTMLElement[];
-    const st = ScrollTrigger.create({
-      trigger: el,
-      start: 'top 85%',
-      end: 'top 35%',
-      scrub: true,
-      onUpdate: (self) => {
-        const p = self.progress * spans.length;
-        for (let i = 0; i < spans.length; i++) {
-          spans[i].style.opacity = String(Math.min(1, Math.max(0.12, p - i)));
-        }
-      },
-    });
-    return () => {
-      st.kill();
+    // Loop rAF + ukur posisi live tiap frame (bukan trigger persenan yang
+    // dihitung sekali): kebal toolbar Chrome yang mengubah tinggi viewport
+    // saat scroll — tiang gawang tak bisa bergeser lagi.
+    // Mulai saat atas paragraf di 90% layar, penuh saat di 60%: rentang ini
+    // selalu reachable (butuh konten bawah ≥40% viewport — footer muat jauh).
+    let raf = 0;
+    let last = -1;
+    const update = () => {
+      raf = requestAnimationFrame(update);
+      const vh = window.innerHeight;
+      if (!vh) return;
+      const top = el.getBoundingClientRect().top;
+      const progress = Math.min(1, Math.max(0, (vh * 0.9 - top) / (vh * 0.3)));
+      const q = Math.round(progress * 500);
+      if (q === last) return; // posisi diam → lewati penulisan (hemat paint)
+      last = q;
+      const p = progress * spans.length;
+      for (let i = 0; i < spans.length; i++) {
+        spans[i].style.opacity = String(Math.min(1, Math.max(0.12, p - i)));
+      }
     };
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
   }, [text]);
 
   return (
