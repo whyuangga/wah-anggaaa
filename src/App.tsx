@@ -5,7 +5,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import Nav from './components/Nav';
-import Loader, { INTRO_KEY } from './components/Loader';
+import Loader from './components/Loader';
 import { sceneBus } from './canvas/bus';
 import { TransitionProvider } from './lib/transition';
 
@@ -34,13 +34,8 @@ function Shell() {
   const contentRef = useRef<HTMLDivElement>(null);
   // Ala Onoera: konten TIDAK di-mount sebelum intro selesai,
   // lalu fade-in kalem berbarengan dengan terangkatnya overlay.
-  const [entered, setEntered] = useState(() => {
-    try {
-      return !!sessionStorage.getItem(INTRO_KEY);
-    } catch {
-      return false;
-    }
-  });
+  // Intro selalu tampil setiap refresh (tanpa session skip).
+  const [entered, setEntered] = useState(false);
 
   const scrollTop = useCallback(() => {
     const lenis = lenisRef.current;

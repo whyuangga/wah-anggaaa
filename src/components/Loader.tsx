@@ -1,8 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 
-export const INTRO_KEY = 'wah-intro-seen';
-
 const VIDEO_SRC = `${import.meta.env.BASE_URL}videos/loader.mp4`;
 
 /**
@@ -29,11 +27,6 @@ function LoaderInner({ onDone }: { onDone: () => void }) {
     const finish = () => {
       if (doneRef.current) return;
       doneRef.current = true;
-      try {
-        sessionStorage.setItem(INTRO_KEY, '1');
-      } catch {
-        /* abaikan */
-      }
       onDone();
     };
 

@@ -151,7 +151,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.4, delay: 0.5, ease: [...EASE] }}
-          className="relative z-10 -mt-3 md:-mt-8 ml-[8vw] md:ml-[30vw]"
+          className="relative z-10 mt-3 md:mt-0 md:-mt-8 ml-1 md:ml-[30vw]"
         >
           <p className="inline-block bg-void/80 pr-4 font-sans font-medium tracking-tight text-[clamp(1.2rem,3.4vw,2.4rem)]">
             Designer <span className="text-bone/40">&</span> Creative Developer

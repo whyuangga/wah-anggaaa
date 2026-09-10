@@ -9,8 +9,8 @@ export type Work = {
 };
 
 export const WORKS: Work[] = [
-  { index: '001', title: 'LEXIER®', category: 'Experimental Typography', year: "'26", url: 'https://lexier.pages.dev/', thumb: null },
-  { index: '002', title: 'AELIAN', category: 'High Jewelry Editorial', year: "'26", url: 'https://aelian.pages.dev/', thumb: null },
+  { index: '001', title: 'LEXIER®', category: 'Experimental Typography', year: "'26", url: 'https://lexier.pages.dev/', thumb: 'https://lexier.pages.dev/og.png' },
+  { index: '002', title: 'AELIAN', category: 'High Jewelry Editorial', year: "'26", url: 'https://aelian.pages.dev/', thumb: 'https://aelian.pages.dev/assets/og_image.jpg' },
   { index: '003', title: 'ÉLAN', category: 'Fashion Editorial', year: "'26", url: 'https://elan-fashion-editorial.pages.dev/', thumb: 'https://elan-fashion-editorial.pages.dev/assets/model-main.jpg' },
   { index: '004', title: 'VIPERA Émeraude', category: 'Luxury Watch', year: "'26", url: 'https://vipera-emeraude.pages.dev/', thumb: 'https://vipera-emeraude.pages.dev/images/gallery-embrace.jpg' },
   { index: '005', title: 'Vroeger Koffiehuis', category: 'Brand Storytelling', year: "'26", url: 'https://vroeger-koffiehuis.pages.dev/', thumb: 'https://vroeger-koffiehuis.pages.dev/img/hero-cutout.webp' },
