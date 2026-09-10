@@ -19,6 +19,7 @@ uniform float uMorph;
 uniform vec2 uPointer;
 uniform float uIntro;
 uniform float uVel;
+uniform float uOct;
 
 const vec3 VOIDC = vec3(0.051, 0.051, 0.047); // #0D0D0C
 const vec3 BONE  = vec3(0.918, 0.910, 0.882); // #EAE8E1
@@ -38,10 +39,11 @@ float noise(vec2 p) {
   );
 }
 
-float fbm(vec2 p) {
+float fbm(vec2 p, float oct) {
   float v = 0.0;
   float a = 0.5;
   for (int i = 0; i < 4; i++) {
+    if (float(i) >= oct) break;
     v += a * noise(p);
     p *= 2.03;
     a *= 0.5;
@@ -61,9 +63,9 @@ void main() {
 
   // warp transisi: geser + turbulensi
   q.x += uMorph * 0.35 * sin(q.y * 4.0 + uTime * 6.0);
-  q += uMorph * 0.25 * vec2(fbm(q * 2.0 + uTime), fbm(q * 2.0 - uTime));
+  q += uMorph * 0.25 * vec2(fbm(q * 2.0 + uTime, uOct), fbm(q * 2.0 - uTime, uOct));
 
-  float n = fbm(q + fbm(q * 1.7 - flow * 0.6));
+  float n = fbm(q + fbm(q * 1.7 - flow * 0.6, uOct), uOct);
 
   // awan tinta monokrom — progres scroll menggeser terang
   float band = smoothstep(0.35, 0.9, n + uProgress * 0.12 - st * 0.03);

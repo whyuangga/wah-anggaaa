@@ -56,20 +56,23 @@ function ManifestoScrub({ text }: { text: string }) {
   );
 }
 
-/* ---------- works grid ala Grégory Lallé: kolase + spotlight + overlay ---------- */
-const ASPECTS = [
-  'aspect-[4/5]',
-  'aspect-square',
-  'aspect-[4/3]',
-  'aspect-[3/4]',
-  'aspect-[16/11]',
-  'aspect-[1/1]',
+/* ---------- works grid ala Grégory Lallé: kolase + spotlight + overlay ----------
+   Mobile: 1 kolom gambar + rel judul sticky di kanan (scroll-spy).
+   Desktop: rel judul sticky kiri + kolase masonry. */
+const ASPECTS_MD = [
+  'md:aspect-[4/5]',
+  'md:aspect-square',
+  'md:aspect-[4/3]',
+  'md:aspect-[3/4]',
+  'md:aspect-[16/11]',
+  'md:aspect-[1/1]',
 ];
 
 function Works() {
   const [focus, setFocus] = useState<number | null>(null);
   const [open, setOpen] = useState<number | null>(null);
   const active = open !== null ? WORKS[open] : null;
+  const cellRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   // kunci scroll halaman saat overlay dibuka (App mendengarkan event ini)
   useEffect(() => {
@@ -88,6 +91,25 @@ function Works() {
     return () => window.removeEventListener('keydown', onKey);
   }, [open ]);
 
+  // scroll-spy khusus sentuh: spotlight mengikuti gambar yang terlihat
+  useEffect(() => {
+    if (!window.matchMedia('(pointer: coarse)').matches) return;
+    const triggers = cellRefs.current.map((el, i) => {
+      if (!el) return null;
+      return ScrollTrigger.create({
+        trigger: el,
+        start: 'top 55%',
+        end: 'bottom 45%',
+        onToggle: (self) => {
+          if (self.isActive) setFocus(i);
+        },
+      });
+    });
+    return () => {
+      triggers.forEach((t) => t?.kill());
+    };
+  }, []);
+
   return (
     <section data-scene={1} className="relative px-5 md:px-10 pt-28 md:pt-40">
       <div className="flex items-end justify-between mb-10 md:mb-16">
@@ -97,11 +119,11 @@ function Works() {
         <Meta className="pb-2">( 011 )</Meta>
       </div>
 
-      <div className="grid md:grid-cols-12 gap-8 md:gap-6">
-        {/* rel judul: hover/tap = spotlight */}
-        <div className="md:col-span-3">
+      <div className="flex md:grid md:grid-cols-12 gap-4 md:gap-6">
+        {/* rel judul: sticky kanan di mobile, sticky kiri di desktop */}
+        <div className="order-2 w-[34%] shrink-0 md:order-1 md:col-span-3 md:w-auto">
           <div
-            className="md:sticky md:top-24 flex md:flex-col gap-x-6 gap-y-1 overflow-x-auto md:overflow-visible pb-3 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0"
+            className="sticky top-24 max-h-[72vh] overflow-y-auto flex flex-col gap-y-1 md:max-h-none md:overflow-visible text-right md:text-left py-1"
             onMouseLeave={() => setFocus(null)}
           >
             {WORKS.map((w, i) => {
@@ -113,63 +135,69 @@ function Works() {
                   onFocus={() => setFocus(i)}
                   onClick={() => setFocus(focus === i ? null : i)}
                   aria-pressed={on}
-                  className={`group flex items-baseline gap-2.5 whitespace-nowrap text-left py-1 transition-all duration-300 cursor-pointer shrink-0 ${
+                  className={`group flex md:items-baseline items-start justify-end md:justify-start gap-2 py-1 transition-all duration-300 cursor-pointer ${
                     on ? 'text-bone md:translate-x-1.5' : 'text-bone/35 hover:text-bone/80'
                   }`}
                 >
-                  <span className={`font-mono text-[10px] ${on ? 'text-bone' : 'text-bone/30'}`}>
+                  <span className={`hidden md:inline font-mono text-[10px] ${on ? 'text-bone' : 'text-bone/30'}`}>
                     {w.index}
                   </span>
-                  <span className="font-sans font-medium tracking-tight text-[15px] md:text-[17px]">
+                  <span className="font-sans font-medium tracking-tight text-[12px] leading-snug md:text-[17px] md:whitespace-nowrap">
                     {on ? `[ ${w.title} ]` : w.title}
                   </span>
                 </button>
               );
             })}
           </div>
-          <Meta className="md:hidden mt-1">tap judul = sorot · tap gambar = buka</Meta>
         </div>
 
-        {/* kolase flowing */}
-        <div className="md:col-span-9 columns-2 lg:columns-3 gap-3 md:gap-4">
-          {WORKS.map((w, i) => (
-            <motion.div
-              key={w.index}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: '-40px' }}
-              transition={{ duration: 0.8, ease: [...EASE] }}
-              className="break-inside-avoid mb-3 md:mb-5"
-            >
-              <button
-                onClick={() => setOpen(i)}
-                aria-label={`${w.title} — buka focus view`}
-                className={`group block w-full text-left cursor-pointer transition-opacity duration-500 ${
-                  focus === null || focus === i ? 'opacity-100' : 'opacity-[0.12]'
-                }`}
+        {/* gambar: 1 kolom di mobile, masonry di desktop */}
+        <div className="order-1 flex-1 min-w-0 md:order-2 md:col-span-9">
+          <div className="flex flex-col gap-10 md:block md:columns-2 lg:columns-3 md:gap-4">
+            {WORKS.map((w, i) => (
+              <motion.div
+                key={w.index}
+                ref={(el) => {
+                  cellRefs.current[i] = el;
+                }}
+                initial={{ opacity: 0, y: 40 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-40px' }}
+                transition={{ duration: 0.8, ease: [...EASE] }}
+                className="break-inside-avoid md:mb-5"
               >
-                <span className={`relative block overflow-hidden bg-[#141412] ${ASPECTS[i % ASPECTS.length]}`}>
-                  <img
-                    src={w.thumb}
-                    alt={w.title}
-                    loading="lazy"
-                    className="img-mono w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-                  />
-                  <span className="absolute top-2 left-2 font-mono text-[10px] tracking-[0.14em] bg-void/70 px-1.5 py-0.5 text-bone/80">
-                    {w.index}
+                <button
+                  onClick={() => setOpen(i)}
+                  aria-label={`${w.title} — buka focus view`}
+                  className={`group block w-full text-left cursor-pointer transition-opacity duration-500 ${
+                    focus === null || focus === i ? 'opacity-100' : 'opacity-[0.12]'
+                  }`}
+                >
+                  <span className={`relative block overflow-hidden bg-[#141412] aspect-[16/10] ${ASPECTS_MD[i % ASPECTS_MD.length]}`}>
+                    <img
+                      src={w.thumb}
+                      alt={w.title}
+                      loading="lazy"
+                      decoding="async"
+                      className="img-mono w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                    />
+                    <span className="absolute top-2 left-2 font-mono text-[10px] tracking-[0.14em] bg-void/70 px-1.5 py-0.5 text-bone/80">
+                      {w.index}
+                    </span>
                   </span>
-                </span>
-                <span className="block pt-2 pb-1">
-                  <span className="block font-sans font-medium tracking-tight text-[15px] md:text-base leading-tight">
-                    {w.title}
+                  <span className="block pt-2 pb-1">
+                    <span className="block font-sans font-medium tracking-tight text-[15px] md:text-base leading-tight">
+                      {w.title}
+                    </span>
+                    <span className="block mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-bone/45">
+                      {w.category}
+                    </span>
                   </span>
-                  <span className="block mt-1 font-mono text-[10px] uppercase tracking-[0.16em] text-bone/45">
-                    {w.category}
-                  </span>
-                </span>
-              </button>
-            </motion.div>
-          ))}
+                </button>
+              </motion.div>
+            ))}
+          </div>
+          <Meta className="md:hidden mt-2">tap judul = sorot · tap gambar = buka</Meta>
         </div>
       </div>
 
