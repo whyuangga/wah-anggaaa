@@ -95,6 +95,31 @@ export default function About() {
     [],
   );
 
+  // baris capabilities meluncur dari kanan ke kiri mengikuti scroll —
+  // plek resep Inspirux (x 35% → 0, scrub per baris).
+  useEffect(() => {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const ctx = gsap.context(() => {
+      gsap.utils.toArray<HTMLElement>('.cap-row').forEach((el) => {
+        gsap.fromTo(
+          el,
+          { x: '35%' },
+          {
+            x: '0%',
+            ease: 'none',
+            scrollTrigger: {
+              trigger: el,
+              start: 'top 90%',
+              end: 'bottom +=70%',
+              scrub: 1,
+            },
+          },
+        );
+      });
+    });
+    return () => ctx.revert();
+  }, []);
+
   return (
     <>
       <section className="px-5 md:px-10 pt-32 md:pt-44 overflow-x-clip">
@@ -155,7 +180,7 @@ export default function About() {
                   {items.map((item) => (
                     <li
                       key={item}
-                      className="py-4 border-b border-bone/15 font-mono text-[12px] uppercase tracking-[0.16em] text-bone/60"
+                      className="cap-row will-change-transform py-4 border-b border-bone/15 font-mono text-[12px] uppercase tracking-[0.16em] text-bone/60"
                     >
                       {item}
                     </li>

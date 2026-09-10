@@ -49,7 +49,7 @@
 4. **Footer minimal** — link `/about` + `/contact`, timezone, `© 2026`.
 
 ### `/about` — Halaman sendiri (ritme tenang, TANPA foto)
-Bio tipografis + efek drift horizontal ala Inspirux (hero + recognition: dua baris konvergen dari sisi berlawanan) + capabilities + recognition + colophon. Tidak ada portrait, tidak ada bulan.
+Bio tipografis + efek drift horizontal ala Inspirux (hero + recognition: dua baris konvergen; tiap baris capabilities: x 35% → 0 scrub) + capabilities + recognition + colophon. Tidak ada portrait, tidak ada bulan.
 
 ### `/contact` — Halaman sendiri (kasual, placeholder)
 Judul besar "say hi" + email placeholder + social links placeholder + info base/timezone. Tanpa form (mailto + links).

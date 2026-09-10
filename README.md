@@ -123,7 +123,9 @@ dengan fallback `prefers-reduced-motion`.
   menulis section dominan (0 hero, 1 works, 2 manifesto) ke `sceneBus`.
 - **Drift horizontal About** (meniru Inspirux): hero masuk dengan dua baris
   konvergen dari sisi berlawanan (`x: ±14% → 0`, Motion); teks recognition
-  memakai mesin scrub GSAP (`x: ±35% → 0` desktop, ±12% mobile).
+  memakai mesin scrub GSAP (`x: ±35% → 0` desktop, ±12% mobile); tiap baris
+  capabilities meluncur `x: 35% → 0` dengan scrub per baris
+  (`start: 'top 90%'`, `end: 'bottom +=70%'`).
 
 ### 3. GSAP timeline — transisi halaman morph
 
