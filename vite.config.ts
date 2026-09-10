@@ -5,9 +5,11 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    // Project page: https://whyuangga.github.io/wah-anggaaa/
-    // Kalau pindah ke custom domain / root, ganti ke '/'.
-    base: '/wah-anggaaa/',
+    // Base adaptif per platform:
+    // - Vercel (root domain)        → '/'
+    // - GitHub Pages (project page) → '/wah-anggaaa/'
+    // Router basename di App.tsx otomatis mengikuti via BASE_URL.
+    base: process.env.VERCEL ? '/' : '/wah-anggaaa/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
