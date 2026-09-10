@@ -113,7 +113,7 @@ function Works() {
   const [open, setOpen] = useState<number | null>(null);
   const active = open !== null ? WORKS[open] : null;
   const cellRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const [order, setOrder] = useState<number[]>(() => WORKS.map((_, i) => i);
+  const [order, setOrder] = useState<number[]>(() => WORKS.map((_, i) => i));
   const [shuffled, setShuffled] = useState(0);
 
   // acak urutan kolase (Fisher-Yates) + kaskade ulang

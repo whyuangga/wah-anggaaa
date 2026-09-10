@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { useParams } from 'react-router-dom';
+import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 import Footer from '../components/Footer';
 import { TLink } from '../lib/transition';
@@ -84,9 +85,11 @@ export default function WorkCase() {
         <div className="grid md:grid-cols-12 gap-10 mt-14 md:mt-20">
           <div className="md:col-span-6 md:col-start-5 space-y-6 text-[16px] leading-relaxed text-bone/70">
             {w.story.map((p, i) => (
-              <Reveal key={i} delay={i * 0.08}>
-                <p>{p}</p>
-              </Reveal>
+              <Fragment key={i}>
+                <Reveal delay={i * 0.08}>
+                  <p>{p}</p>
+                </Reveal>
+              </Fragment>
             ))}
           </div>
         </div>
