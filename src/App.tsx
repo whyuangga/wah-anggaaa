@@ -133,7 +133,9 @@ function Shell() {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    // BASE_URL: '/' saat dev lokal tertentu, '/wah-anggaaa/' di Pages —
+    // basename router selalu mengikutinya.
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Shell />
     </BrowserRouter>
   );

@@ -5,6 +5,9 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    // Project page: https://whyuangga.github.io/wah-anggaaa/
+    // Kalau pindah ke custom domain / root, ganti ke '/'.
+    base: '/wah-anggaaa/',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
