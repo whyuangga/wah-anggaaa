@@ -1,7 +1,7 @@
 # wah:anggaaa — Personal Website · Planning v1
 
-> Status: APPROVED — eksekusi berjalan di branch `personal-site/build` (fresh dari `main`).
-> Branch lama `redesign/landing-dark-editorial` diarsipkan apa adanya, tidak dipakai lagi.
+> Status: SELESAI — semua phase dieksekusi dan di-merge ke `main` (2026-09-10).
+> Branch `personal-site/build` sudah menyatu ke main; `redesign/landing-dark-editorial` arsip.
 
 ## 1. Keputusan yang sudah locked
 

@@ -1,7 +1,7 @@
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
 import Footer from '../components/Footer';
+import { TLink } from '../lib/transition';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -91,12 +91,12 @@ export default function About() {
         </div>
 
         <div className="mt-16 md:mt-24">
-          <Link
+          <TLink
             to="/contact"
             className="group font-sans font-medium text-lg underline underline-offset-8 decoration-bone/30 hover:decoration-bone transition-all"
           >
-            say hi <span className="inline-block transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">↗</span>
-          </Link>
+            <>say hi <span className="inline-block transition-transform group-hover:translate-x-1 group-hover:-translate-y-1">↗</span></>
+          </TLink>
         </div>
       </section>
 

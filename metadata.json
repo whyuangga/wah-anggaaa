@@ -1,6 +1,0 @@
-{
-  "name": "RIVR",
-  "description": "A sleek, glassmorphism Hero section for the RIVR DeFi dashboard showcase.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

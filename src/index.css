@@ -72,3 +72,12 @@ html.lenis body {
 .rule {
   background: rgba(234, 232, 225, 0.14);
 }
+
+:focus-visible {
+  outline: 1px solid var(--color-bone);
+  outline-offset: 3px;
+}
+
+img {
+  user-select: none;
+}
