@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
-import { TLink } from '../lib/transition';
+import { TLink, useGo } from '../lib/transition';
 import { WORKS } from '../data/works';
 import { useSceneSections } from '../hooks/useSceneSections';
 
@@ -76,11 +76,59 @@ const ASPECTS_MD = [
   'md:aspect-[1/1]',
 ];
 
+/* ---------- kata punchline hero yang berganti-ganti (kinetic words) ---------- */
+const KINETIC = ['seriously', 'playfully', 'obsessively', 'personally', 'religiously'];
+
+function KineticWord() {
+  const [i, setI] = useState(0);
+  const [reduced] = useState(
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  useEffect(() => {
+    if (reduced) return;
+    const id = setInterval(() => setI((v) => (v + 1) % KINETIC.length), 2600);
+    return () => clearInterval(id);
+  }, [reduced]);
+  return (
+    <span className="inline-block overflow-hidden align-bottom">
+      <AnimatePresence mode="wait">
+        <motion.span
+          key={KINETIC[i]}
+          initial={reduced ? false : { y: '70%', opacity: 0 }}
+          animate={{ y: '0%', opacity: 1 }}
+          exit={reduced ? undefined : { y: '-70%', opacity: 0 }}
+          transition={{ duration: 0.45, ease: [...EASE] }}
+          className="inline-block will-change-transform"
+        >
+          {KINETIC[i]}
+        </motion.span>
+      </AnimatePresence>
+    </span>
+  );
+}
+
 function Works() {
+  const go = useGo();
   const [focus, setFocus] = useState<number | null>(null);
   const [open, setOpen] = useState<number | null>(null);
   const active = open !== null ? WORKS[open] : null;
   const cellRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [order, setOrder] = useState<number[]>(() => WORKS.map((_, i) => i);
+  const [shuffled, setShuffled] = useState(0);
+
+  // acak urutan kolase (Fisher-Yates) + kaskade ulang
+  const shuffle = () => {
+    setOrder((prev) => {
+      const next = [...prev];
+      for (let i = next.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [next[i], next[j]] = [next[j], next[i]];
+      }
+      return next;
+    });
+    setShuffled((n) => n + 1);
+    setFocus(null);
+  };
 
   // kunci scroll halaman saat overlay dibuka (App mendengarkan event ini)
   useEffect(() => {
@@ -116,7 +164,7 @@ function Works() {
     return () => {
       triggers.forEach((t) => t?.kill());
     };
-  }, []);
+  }, [shuffled]);
 
   return (
     <section data-scene={1} className="relative px-5 md:px-10 pt-28 md:pt-40">
@@ -124,7 +172,15 @@ function Works() {
         <h2 className="font-sans font-semibold uppercase tracking-[-0.03em] leading-[0.85] text-[clamp(2.8rem,9vw,8rem)]">
           works
         </h2>
-        <Meta className="pb-2">( 011 )</Meta>
+        <div className="pb-2 flex items-center gap-5">
+          <Meta>( 011 )</Meta>
+          <button
+            onClick={shuffle}
+            className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50 hover:text-bone transition-colors cursor-pointer"
+          >
+            [ acak! ]
+          </button>
+        </div>
       </div>
 
       <div className="flex md:grid md:grid-cols-12 gap-4 md:gap-6">
@@ -134,7 +190,8 @@ function Works() {
             className="sticky top-28 md:top-24 max-h-[72vh] overflow-y-auto flex flex-col gap-y-1 md:max-h-none md:overflow-visible text-right md:text-left py-1"
             onMouseLeave={() => setFocus(null)}
           >
-            {WORKS.map((w, i) => {
+            {order.map((i) => {
+              const w = WORKS[i];
               const on = focus === i;
               return (
                 <button
@@ -162,20 +219,23 @@ function Works() {
         {/* gambar: 1 kolom di mobile, masonry di desktop */}
         <div className="order-1 flex-1 min-w-0 md:order-2 md:col-span-9">
           <div className="flex flex-col gap-10 md:block md:columns-2 lg:columns-3 md:gap-4">
-            {WORKS.map((w, i) => (
+            {order.map((i, pos) => {
+              const w = WORKS[i];
+              return (
               <motion.div
-                key={w.index}
+                key={`${shuffled}-${w.index}`}
                 ref={(el) => {
                   cellRefs.current[i] = el;
                 }}
                 initial={{ opacity: 0, y: 40 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-40px' }}
-                transition={{ duration: 0.8, ease: [...EASE] }}
+                transition={{ duration: 0.8, delay: Math.min(pos * 0.04, 0.4), ease: [...EASE] }}
                 className="break-inside-avoid md:mb-5"
               >
                 <button
                   onClick={() => setOpen(i)}
+                  data-cursor="buka ↗"
                   aria-label={`${w.title} — buka focus view`}
                   className={`group block w-full text-left cursor-pointer transition-opacity duration-500 ${
                     focus === null || focus === i ? 'opacity-100' : 'opacity-[0.12]'
@@ -211,7 +271,8 @@ function Works() {
                   </span>
                 </button>
               </motion.div>
-            ))}
+              );
+            })}
           </div>
           <Meta className="md:hidden mt-2">tap judul = sorot · tap gambar = buka</Meta>
         </div>
@@ -280,6 +341,18 @@ function Works() {
                   {active.category} — {active.year}
                 </p>
                 <div className="mt-8 flex flex-wrap items-center gap-x-10 gap-y-4 pb-10">
+                  <button
+                    onClick={() => {
+                      setOpen(null);
+                      go(`/works/${active.slug}`);
+                    }}
+                    className="group font-sans font-medium text-lg underline underline-offset-8 decoration-bone/30 hover:decoration-bone transition-all cursor-pointer"
+                  >
+                    buka case study{' '}
+                    <span className="inline-block transition-transform group-hover:translate-x-1">
+                      →
+                    </span>
+                  </button>
                   <a
                     href={active.url}
                     target="_blank"
@@ -353,7 +426,7 @@ export default function Home() {
             transition={{ duration: 1.5, delay: 0.28, ease: [...EASE] }}
             className="md:block text-bone"
           >
-            taken far too seriously.
+            taken far too <KineticWord />.
           </motion.span>
         </h1>
 

@@ -2,6 +2,7 @@ import { useMemo, useRef } from 'react';
 import gsap from 'gsap';
 import { motion } from 'motion/react';
 import { useJakartaTime } from '../hooks/useJakartaTime';
+import { useStudioStatus } from '../hooks/useStudioStatus';
 import { TLink } from '../lib/transition';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -9,6 +10,7 @@ const WORD = 'wah:anggaaa'.split('');
 
 export default function Footer() {
   const time = useJakartaTime();
+  const status = useStudioStatus();
   const wordRef = useRef<HTMLSpanElement>(null);
   const reduced = useMemo(
     () =>
@@ -77,6 +79,9 @@ export default function Footer() {
         </div>
         <p>
           jakarta — {time} <span className="text-bone/30">[ just for fun ]</span>
+        </p>
+        <p>
+          studio: <span className="text-bone/80">[ {status} ]</span>
         </p>
       </div>
     </footer>

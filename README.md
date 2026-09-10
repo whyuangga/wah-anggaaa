@@ -37,7 +37,8 @@ GitHub Pages maupun Vercel dari codebase yang sama.
 
 1. **Hero** — tagline puitis raksasa (`A one-man playground for imaginary
    brands, taken far too seriously.`, 3 baris stagger), punchline terang
-   penuh vs dua baris redup, label
+   penuh vs dua baris redup, kata terakhir berputar tiap 2,6 dtk
+   (seriously → playfully → obsessively → personally → religiously), label
    `[ portfolio — vol.01 ]`, baris peran di bawah tagline (offset kanan di
    desktop), jam-data meta (11 works, koordinat Jakarta). Semua fade-in
    staggered setelah loader selesai.
@@ -47,7 +48,10 @@ GitHub Pages maupun Vercel dari codebase yang sama.
    **focus overlay fullscreen** (preview besar + blurb + link visit +
    prev/next + keyboard Esc/←/→, scroll halaman dikunci). Di mobile berubah
    jadi 1 kolom landscape + rel judul sticky di kanan dengan **scroll-spy**
-   (judul aktif mengikuti gambar yang terlihat).
+   (judul aktif mengikuti gambar yang terlihat). Tombol `[ acak! ]`
+   mengacak urutan kolase + rel dengan kaskade ulang. Tiap karya punya
+   halaman case-study (`/works/:slug`): cerita fiktif, angka ngarang,
+   stack, visit, dan nav prev/next.
 3. **Manifesto** — satu kalimat besar yang opacity-nya menyala **kata per
    kata mengikuti scroll** (scrub), lalu link ke About + footer raksasa.
 
@@ -151,6 +155,11 @@ navigasi ganda; klik link halaman aktif = scroll ke atas.
   dibungkus `AnimatePresence` + panel `key`-remount (scale 0.97 → 1) tiap
   ganti karya — termasuk saat prev/next.
 - Easing tunggal di seluruh situs: `[0.22, 1, 0.36, 1]` (easeOutExpo-ish).
+- **Kursor custom** (`Cursor.tsx`, desktop fine-pointer saja): titik + cincin
+  `mix-blend-difference` mengikuti mouse via rAF lerp ganda (cepat +
+  lambat), membesar di `a`/`button`, menampilkan label dari atribut
+  `data-cursor` (`buka ↗`, `racik!`, `kunjungi ↗`). Cursor native
+  disembunyikan hanya saat komponen aktif (class `.has-cursor`).
 
 ### 5. Three.js — latar shader reaktif (custom GLSL)
 
@@ -226,16 +235,19 @@ dan loader-nya.
     ├── components/
     │   ├── Loader.tsx       → intro video + frame counter rAF + garis progres
     │   ├── Nav.tsx          → navigasi fixed transparan (TLink)
-    │   └── Footer.tsx       → footer raksasa (cascade huruf + wave hover) + jam Jakarta
+    │   ├── Cursor.tsx       → kursor custom desktop (rAF lerp + label data-cursor)
+    │   └── Footer.tsx       → footer raksasa (cascade huruf + wave hover) + jam + status studio
     ├── routes/
     │   ├── Home.tsx         → hero + Works (Lallé grid/spotlight/overlay) + manifesto scrub
     │   ├── About.tsx        → profil + drift horizontal + capability + kolofon
-    │   ├── Contact.tsx      → email placeholder + sosial + jam live
+    │   ├── Contact.tsx      → email + sosial + generator brand khayalan + status
+    │   ├── WorkCase.tsx     → case-study per karya (/works/:slug)
     │   └── NotFound.tsx     → halaman 404 ("nyasar.")
     ├── data/works.ts        → 11 karya: judul, kategori, tahun, thumb lokal, blur, blurb, url
     ├── hooks/
     │   ├── useSceneSections.ts → ScrollTrigger → section aktif ke sceneBus
-    │   └── useJakartaTime.ts   → jam WIB live per detik
+    │   ├── useJakartaTime.ts   → jam WIB live per detik
+    │   └── useStudioStatus.ts  → status kocak mengikuti jam Jakarta
     ├── lib/transition.tsx   → TLink + morph timeline (GSAP × shader warp)
     └── assets/fonts/        → 5 file woff2 self-hosted
 ```

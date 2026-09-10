@@ -35,7 +35,7 @@
 
 ## 3. Arsitektur
 
-- **Routing:** `react-router-dom` — `/`, `/about`, `/contact` (URL asli, bisa di-share langsung).
+- **Routing:** `react-router-dom` — `/`, `/about`, `/contact`, `/works/:slug` (URL asli, bisa di-share langsung).
 - **Kanvas WebGL:** SATU `<canvas>` fixed full-viewport di belakang semua konten, kontinu antar scroll & antar halaman (scene bertransisi saat pindah route, bukan mount/unmount).
 - **Sistem freeform:** grid 12 kolom + elemen absolute yang overlap (gambar di belakang teks, label mono vertikal/diagonal, gambar menabrak viewport edge). Unit berbasis viewport (`clamp`, `vw`) agar collage tetap proporsional di mobile.
 - **Pengganti pill/marquee:** label `[brackets]`, garis/rules, kotak sudut tajam, underline animasi. Gerak dekoratif diganti pinned scroll & hover states.
@@ -43,8 +43,8 @@
 ## 4. Konten per halaman
 
 ### `/` — Landing (freeform collage)
-1. **Hero** — tagline raksasa 3 baris (`A one-man playground for imaginary brands, taken far too seriously.`), role `Designer & Creative Developer`, label `[ just for fun ]` + `[ jakarta — wib ]`, CTA ke `/contact`. State 3D: A.
-2. **Works grid (ala Grégory Lallé)** — 11 thumbnail dalam satu kolase flowing (masonry CSS) + rel judul; hover/tap judul = spotlight (lainnya meredup); klik sel = focus overlay fullscreen (preview besar + blurb + visit + prev/next + keyboard). Mobile: 1 kolom landscape + rel judul sticky kanan + scroll-spy. State 3D: B.
+1. **Hero** — tagline raksasa 3 baris (`A one-man playground for imaginary brands, taken far too seriously.`) + kata terakhir berputar (kinetic words), role `Designer & Creative Developer`, label `[ just for fun ]` + `[ jakarta — wib ]`, CTA ke `/contact`. State 3D: A.
+2. **Works grid (ala Grégory Lallé)** — 11 thumbnail dalam satu kolase flowing (masonry CSS) + rel judul; hover/tap judul = spotlight (lainnya meredup); klik sel = focus overlay fullscreen (preview besar + blurb + visit + case-study + prev/next + keyboard). Tombol [ acak! ] mengacak urutan. Mobile: 1 kolom landscape + rel judul sticky kanan + scroll-spy. State 3D: B.
 3. **Manifesto** — 2–4 kalimat, reveal kata-per-kata mengikuti scroll. State 3D: C.
 4. **Footer minimal** — link `/about` + `/contact`, timezone, `© 2026`. Kata raksasa cascade per huruf saat masuk viewport + wave saat hover.
 
@@ -52,7 +52,7 @@
 Bio tipografis + efek drift horizontal ala Inspirux (hero + recognition: dua baris konvergen; tiap baris capabilities: x 35% → 0 scrub) + capabilities + recognition + colophon. Tidak ada portrait, tidak ada bulan.
 
 ### `/contact` — Halaman sendiri (kasual, placeholder)
-Judul besar "say hi" + email placeholder + social links placeholder + info base/timezone. Tanpa form (mailto + links).
+Judul besar "say hi" + email placeholder + social links placeholder + info base/timezone + status studio (jam Jakarta) + generator brand khayalan. Tanpa form (mailto + links).
 
 ## 5. Daftar karya final (11) — milik user, thumbnail self-hosted
 
@@ -99,7 +99,8 @@ src/
   routes/
     Home.tsx              → Hero + SelectedWorks + FullIndex + Manifesto (freeform)
     About.tsx             → bio + drift horizontal ala Inspirux + capabilities
-    Contact.tsx           → say hi + placeholder links
+    Contact.tsx           → say hi + placeholder links + generator brand
+    WorkCase.tsx          → case-study per karya (/works/:slug)
   canvas/
     Scene.tsx             → satu Three.js canvas + state A/B/C
     shaders/              → GLSL (jika perlu)

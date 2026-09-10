@@ -1,12 +1,92 @@
-import { motion } from 'motion/react';
+import { useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import Footer from '../components/Footer';
 import { CONTACT } from '../data/works';
 import { useJakartaTime } from '../hooks/useJakartaTime';
+import { useStudioStatus } from '../hooks/useStudioStatus';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+const GEN_A = ['Lex', 'Vel', 'Mor', 'Sol', 'Nov', 'Aer', 'Ony', 'Lum', 'Kas', 'Zen', 'Bru', 'Fal', 'Ond', 'Pra', 'Ves', 'Kir', 'Hal', 'Rou', 'Sel', 'Tan'];
+const GEN_B = ['avia', 'oria', 'enne', 'essa', 'ova', 'elle', 'issa', 'una', 'ique', 'ora', 'isia', 'ara', 'onne', 'ille', 'usia', 'erre', 'anda', 'ilia', 'ossa', 'urra'];
+const GEN_SUF = ['', '', '', '®', ' co.', ' supply', ' club', ' studio'];
+const GEN_CAT = ['parfum fiktif', 'kopi imajiner', 'jam khayalan', 'galeri hantu', 'hotel mimpi', 'roti khayal', 'sneakers astral', 'teh gaib', 'bengkel angkasa', 'toko rindu', 'sirkus mini', 'studio hujan'];
+
+function racik() {
+  const pick = <T,>(arr: T[]): T => arr[Math.floor(Math.random() * arr.length)];
+  return { name: pick(GEN_A) + pick(GEN_B) + pick(GEN_SUF), cat: pick(GEN_CAT) };
+}
+
+function BrandGenerator() {
+  const [brand, setBrand] = useState(racik);
+  const [copied, setCopied] = useState(false);
+  const reduced =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const again = () => {
+    setBrand(racik());
+    setCopied(false);
+  };
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(`${brand.name} — ${brand.cat}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard tak tersedia — abaikan */
+    }
+  };
+
+  return (
+    <div className="mt-16 md:mt-24 border-t border-bone/15 pt-10">
+      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50">
+        [ brand khayalan hari ini ]
+      </p>
+      <p className="mt-4 text-[15px] text-bone/60 max-w-[42ch] leading-relaxed">
+        Belum punya brand fiktif sendiri? Pencet tombolnya — gratis,
+        tanpa syarat, tanpa masa depan.
+      </p>
+      <div className="mt-8 min-h-[7rem] md:min-h-[9rem]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={brand.name}
+            initial={reduced ? false : { opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduced ? undefined : { opacity: 0, y: -18 }}
+            transition={{ duration: 0.45, ease: [...EASE] }}
+          >
+            <p className="font-sans font-semibold uppercase tracking-tight leading-[0.95] text-[clamp(2.2rem,7vw,4.5rem)]">
+              {brand.name}
+            </p>
+            <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.18em] text-bone/45">
+              — {brand.cat}
+            </p>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+      <div className="mt-6 flex items-center gap-6 font-mono text-[11px] uppercase tracking-[0.18em]">
+        <button
+          onClick={again}
+          data-cursor="racik!"
+          className="text-bone/70 hover:text-bone transition-colors cursor-pointer"
+        >
+          [ racik lagi ]
+        </button>
+        <button
+          onClick={copy}
+          className="text-bone/50 hover:text-bone transition-colors cursor-pointer"
+        >
+          {copied ? '[ tersalin ✓ ]' : '[ salin ]'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function Contact() {
   const time = useJakartaTime();
+  const status = useStudioStatus();
 
   return (
     <>
@@ -54,8 +134,13 @@ export default function Contact() {
           ))}
         </div>
 
+        <BrandGenerator />
+
         <div className="mt-12 flex flex-col md:flex-row justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.18em] text-bone/50">
           <p>jakarta, id — {time} wib</p>
+          <p>
+            studio: <span className="text-bone/80">[ {status} ]</span>
+          </p>
           <p>iseng-iseng welcome — no brief, no deadline, no drama</p>
         </div>
       </section>

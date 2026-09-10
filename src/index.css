@@ -116,3 +116,50 @@ html.lenis body {
 img {
   user-select: none;
 }
+
+/* kursor custom: cursor native disembunyikan hanya saat komponen aktif */
+.has-cursor,
+.has-cursor * {
+  cursor: none !important;
+}
+
+.cursor-ring {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  translate: -50% -50%;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 9999px;
+  mix-blend-mode: difference;
+  transition: width 0.3s ease, height 0.3s ease, background-color 0.3s ease;
+}
+
+[data-mode='hover'] .cursor-ring {
+  width: 58px;
+  height: 58px;
+  background-color: rgba(255, 255, 255, 0.14);
+}
+
+[data-mode='label'] .cursor-ring {
+  width: 88px;
+  height: 88px;
+  background-color: var(--color-bone);
+  border-color: var(--color-bone);
+  mix-blend-mode: normal;
+}
+
+.cursor-label {
+  display: none;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-void);
+  white-space: nowrap;
+}
+
+[data-mode='label'] .cursor-label {
+  display: block;
+}

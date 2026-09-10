@@ -6,6 +6,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Lenis from 'lenis';
 import Nav from './components/Nav';
 import Loader from './components/Loader';
+import Cursor from './components/Cursor';
 import { sceneBus } from './canvas/bus';
 import { TransitionProvider } from './lib/transition';
 
@@ -14,6 +15,7 @@ gsap.registerPlugin(ScrollTrigger);
 const Home = lazy(() => import('./routes/Home'));
 const About = lazy(() => import('./routes/About'));
 const Contact = lazy(() => import('./routes/Contact'));
+const WorkCase = lazy(() => import('./routes/WorkCase'));
 const NotFound = lazy(() => import('./routes/NotFound'));
 const Scene = lazy(() => import('./canvas/Scene'));
 
@@ -131,6 +133,7 @@ function Shell() {
     import('./routes/Home').catch(() => {});
     import('./routes/About').catch(() => {});
     import('./routes/Contact').catch(() => {});
+    import('./routes/WorkCase').catch(() => {});
     import('./routes/NotFound').catch(() => {});
     import('./canvas/Scene').catch(() => {});
   }, []);
@@ -144,6 +147,8 @@ function Shell() {
           <Scene />
         </Suspense>
 
+        <Cursor />
+
         <div ref={contentRef} className="relative z-10">
           {entered && <Nav />}
           <RouteSync scrollTop={scrollTop} />
@@ -153,6 +158,7 @@ function Shell() {
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+                <Route path="/works/:slug" element={<WorkCase />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>

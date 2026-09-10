@@ -19,5 +19,6 @@ export const sceneBus = {
 export function sceneTarget(): number {
   if (sceneBus.route === '/about') return 3;
   if (sceneBus.route === '/contact') return 4;
+  if (sceneBus.route.startsWith('/works/')) return 1;
   return Math.min(2, Math.max(0, sceneBus.section));
 }
