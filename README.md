@@ -224,7 +224,7 @@ dan loader-nya.
     ├── components/
     │   ├── Loader.tsx       → intro video + frame counter rAF + garis progres
     │   ├── Nav.tsx          → navigasi fixed transparan (TLink)
-    │   └── Footer.tsx       → footer raksasa + jam Jakarta + status fun
+    │   └── Footer.tsx       → footer raksasa (cascade huruf + wave hover) + jam Jakarta
     ├── routes/
     │   ├── Home.tsx         → hero + Works (Lallé grid/spotlight/overlay) + manifesto scrub
     │   ├── About.tsx        → profil + drift horizontal + capability + kolofon

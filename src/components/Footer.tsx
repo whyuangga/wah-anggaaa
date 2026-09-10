@@ -1,15 +1,70 @@
+import { useMemo, useRef } from 'react';
+import gsap from 'gsap';
+import { motion } from 'motion/react';
 import { useJakartaTime } from '../hooks/useJakartaTime';
 import { TLink } from '../lib/transition';
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+const WORD = 'wah:anggaaa'.split('');
+
 export default function Footer() {
   const time = useJakartaTime();
+  const wordRef = useRef<HTMLSpanElement>(null);
+  const reduced = useMemo(
+    () =>
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+    [],
+  );
+
+  // gelombang hover: huruf-huruf melompat berurutan (desktop)
+  const wave = () => {
+    if (reduced) return;
+    const el = wordRef.current;
+    if (!el) return;
+    gsap.fromTo(
+      el.querySelectorAll('.f-letter'),
+      { y: '0%' },
+      {
+        y: '-14%',
+        duration: 0.28,
+        ease: 'power2.out',
+        stagger: { each: 0.04, yoyo: true, repeat: 1 },
+        overwrite: 'auto',
+      },
+    );
+  };
 
   return (
     <footer className="relative px-5 md:px-10 pt-20 md:pt-28 pb-6">
       <TLink to="/" ariaLabel="Kembali ke index">
-        <span className="block font-sans font-semibold uppercase tracking-[-0.03em] leading-[0.85] text-[clamp(3rem,12vw,12rem)] whitespace-nowrap hover:opacity-80 transition-opacity">
-          wah:anggaaa
-        </span>
+        <motion.span
+          ref={wordRef}
+          onMouseEnter={wave}
+          initial={reduced ? false : 'hidden'}
+          whileInView="show"
+          viewport={{ once: true, margin: '-40px' }}
+          variants={{ show: { transition: { staggerChildren: 0.045, delayChildren: 0.1 } } }}
+          className="block font-sans font-semibold uppercase tracking-[-0.03em] leading-[0.85] text-[clamp(3rem,12vw,12rem)] whitespace-nowrap hover:opacity-80 transition-opacity"
+        >
+          {WORD.map((ch, i) => (
+            <span
+              key={`${ch}-${i}`}
+              aria-hidden
+              className="inline-block overflow-hidden align-bottom pb-[0.06em] -mb-[0.06em]"
+            >
+              <motion.span
+                variants={{
+                  hidden: { y: '110%' },
+                  show: { y: '0%', transition: { duration: 0.9, ease: [...EASE] } },
+                }}
+                className="f-letter inline-block will-change-transform"
+              >
+                {ch}
+              </motion.span>
+            </span>
+          ))}
+        </motion.span>
       </TLink>
 
       <div className="rule h-px w-full mt-10 md:mt-14" />
