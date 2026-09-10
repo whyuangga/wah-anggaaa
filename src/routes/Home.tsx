@@ -28,7 +28,7 @@ function ManifestoScrub({ text }: { text: string }) {
     const st = ScrollTrigger.create({
       trigger: el,
       start: 'top 85%',
-      end: 'bottom 45%',
+      end: 'top 35%',
       scrub: true,
       onUpdate: (self) => {
         const p = self.progress * spans.length;
@@ -123,7 +123,7 @@ function Works() {
         {/* rel judul: sticky kanan di mobile, sticky kiri di desktop */}
         <div className="order-2 w-[34%] shrink-0 md:order-1 md:col-span-3 md:w-auto">
           <div
-            className="sticky top-24 max-h-[72vh] overflow-y-auto flex flex-col gap-y-1 md:max-h-none md:overflow-visible text-right md:text-left py-1"
+            className="sticky top-28 md:top-24 max-h-[72vh] overflow-y-auto flex flex-col gap-y-1 md:max-h-none md:overflow-visible text-right md:text-left py-1"
             onMouseLeave={() => setFocus(null)}
           >
             {WORKS.map((w, i) => {
