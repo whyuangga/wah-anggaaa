@@ -35,10 +35,12 @@ GitHub Pages maupun Vercel dari codebase yang sama.
 
 ### `/` — Home (freeform, 3 babak)
 
-1. **Hero** — tipografi raksasa `WAH:ANGGAAA` (clamp sampai 16rem), label
-   `[ portfolio — vol.01 ]`, baris peran yang "menabrak" nama di desktop,
-   jam-data meta (11 works, koordinat Jakarta). Semua fade-in staggered
-   setelah loader selesai.
+1. **Hero** — tagline puitis raksasa (`A one-man playground for imaginary
+   brands, taken far too seriously.`, 3 baris stagger), punchline terang
+   penuh vs dua baris redup, label
+   `[ portfolio — vol.01 ]`, baris peran di bawah tagline (offset kanan di
+   desktop), jam-data meta (11 works, koordinat Jakarta). Semua fade-in
+   staggered setelah loader selesai.
 2. **Works** — grid ala **Grégory Lallé**: 11 thumbnail dalam satu kolase
    flowing + rel judul sticky. Hover/tap judul = *spotlight* (karya lain
    meredup ke 12%, judul aktif dibungkus `[ brackets ]`). Klik gambar =

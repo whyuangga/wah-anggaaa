@@ -330,25 +330,41 @@ export default function Home() {
           jakarta, id — 6.2°s 106.8°e
         </Meta>
 
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.6, ease: [...EASE] }}
-          className="font-sans font-semibold uppercase tracking-[-0.035em] leading-[0.82] text-[clamp(4.2rem,17vw,16rem)]"
-        >
-          wah:
-          <br />
-          anggaaa
-        </motion.h1>
+        <h1 className="font-sans font-medium tracking-[-0.02em] leading-[1.04] text-[clamp(2.4rem,7.4vw,7rem)] max-w-[22ch] md:max-w-none">
+          <motion.span
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.5, ease: [...EASE] }}
+            className="md:block text-bone/85"
+          >
+            A one-man playground{' '}
+          </motion.span>
+          <motion.span
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.5, delay: 0.14, ease: [...EASE] }}
+            className="md:block text-bone/85"
+          >
+            for imaginary brands,{' '}
+          </motion.span>
+          <motion.span
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.5, delay: 0.28, ease: [...EASE] }}
+            className="md:block text-bone"
+          >
+            taken far too seriously.
+          </motion.span>
+        </h1>
 
-        {/* role line menabrak nama (desktop saja) */}
+        {/* baris peran di bawah tagline */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.4, delay: 0.5, ease: [...EASE] }}
-          className="relative z-10 mt-3 md:mt-0 md:-mt-8 ml-1 md:ml-[30vw]"
+          className="relative z-10 mt-6 md:mt-8 ml-1 md:ml-[30vw]"
         >
-          <p className="inline-block bg-void/80 pr-4 font-sans font-medium tracking-tight text-[clamp(1.2rem,3.4vw,2.4rem)]">
+          <p className="font-sans font-medium tracking-tight text-[clamp(1.2rem,3.4vw,2.4rem)]">
             Designer <span className="text-bone/40">&</span> Creative Developer
           </p>
         </motion.div>
@@ -360,8 +376,8 @@ export default function Home() {
             transition={{ duration: 1.3, delay: 0.7, ease: [...EASE] }}
             className="md:col-span-4 text-[15px] leading-relaxed text-bone/60 max-w-[34ch]"
           >
-            Taman bermain satu orang. Aku mendesain &amp; membangun landing page
-            fiktif — brand khayalan yang digarap serius.
+            Taman bermain satu orang milik Angga — dibangun di jam-jam
+            curian: tanpa klien, tanpa brief, cuma obsesi.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 14 }}
