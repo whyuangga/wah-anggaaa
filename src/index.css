@@ -1,28 +1,74 @@
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
-
-@font-face {
-    font-family: "Helvetica Regular";
-    src: url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.eot");
-    src: url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.eot?#iefix")format("embedded-opentype"),
-    url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.woff2")format("woff2"),
-    url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.woff")format("woff"),
-    url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.ttf")format("truetype"),
-    url("https://db.onlinewebfonts.com/t/a64ff11d2c24584c767f6257e880dc65.svg#Helvetica Regular")format("svg");
-}
 
 @theme {
-  --font-helvetica: "Helvetica Regular", ui-sans-serif, system-ui, sans-serif;
-  --font-jakarta: "Plus Jakarta Sans", sans-serif;
-  --font-playfair: "Playfair Display", serif;
+  --color-void: #0d0d0c;
+  --color-bone: #eae8e1;
+
+  --font-sans: "General Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
 :root {
-  font-family: var(--font-helvetica);
+  color-scheme: dark;
+}
+
+html {
+  background: var(--color-void);
 }
 
 body {
   margin: 0;
+  background: var(--color-void);
+  color: var(--color-bone);
+  font-family: var(--font-sans);
   overflow-x: hidden;
-  background-color: #f0f0f0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-bone);
+  color: var(--color-void);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0d0d0c;
+}
+::-webkit-scrollbar-thumb {
+  background: #2b2b28;
+  border-radius: 0;
+}
+
+/* ---- lenis recommended css ---- */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* ---- helpers (monochrome only) ---- */
+.text-stroke {
+  -webkit-text-stroke: 1px rgba(234, 232, 225, 0.4);
+  color: transparent;
+}
+
+.img-mono {
+  filter: grayscale(1) contrast(1.06);
+}
+
+.rule {
+  background: rgba(234, 232, 225, 0.14);
 }

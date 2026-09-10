@@ -1,0 +1,121 @@
+# wah:anggaaa — Personal Website · Planning v1
+
+> Status: APPROVED — eksekusi berjalan di branch `personal-site/build` (fresh dari `main`).
+> Branch lama `redesign/landing-dark-editorial` diarsipkan apa adanya, tidak dipakai lagi.
+
+## 1. Keputusan yang sudah locked
+
+| Aspek | Keputusan |
+|---|---|
+| Fokus situs | Creative / Designer portfolio |
+| Role line | Designer & Creative Developer |
+| Landing (`/`) | Hero + Selected Works + Manifesto |
+| Halaman sendiri | `/about`, `/contact` |
+| Layout landing | Freeform collage ala kanvas Framer: elemen overlap/tabrak grid, full-bleed, tanpa kotak section, tetap scroll vertikal |
+| Motion | Immersive 3D: satu kanvas WebGL kontinu sebagai background + scroll-driven scenes |
+| Font (2 saja) | General Sans (Fontshare) + IBM Plex Mono (Google Fonts) |
+| Warna (2 saja) | Background `#0D0D0C`, teks `#EAE8E1` |
+| Larangan | Tanpa pill, tanpa marquee — selamanya |
+| Foto & bulan | TIDAK ADA foto portrait, TIDAK ADA motif bulan di mana pun (aset bulan lama dibuang) |
+| Status | Bukan open-for-work — situs iseng-iseng. Label hero: `[ just for fun ]`, nada contact kasual ("say hi") |
+| Kontak | Placeholder dulu (`halo@wahanggaaa.id` + social `#`) — gampang di-find/replace nanti |
+
+## 1b. Intro & transisi (locked)
+
+- **Intro/loader ala Onoera:** layar void → `wah:anggaaa` (IBM Plex Mono, kecil, tengah) fade-in perlahan → landing fade-in graceful. Total ±1.6 detik, tanpa counter/angka, tanpa progress bar. Sekali per kunjungan (session).
+- **Transisi antar halaman = 3D morph:** kamera WebGL terbang/bertransisi ke state halaman tujuan + konten lama fade-out → konten baru fade-in. Di mobile: morph disederhanakan (crossfade + sedikit pergerakan kamera) demi 60fps.
+
+## 2. Pola curian dari 5 referensi
+
+- **kaviengcreative** → Selected Works sebagai index bernomor (`001…`), hover memunculkan preview, "scroll to enter".
+- **inspirux** → alur landing: loader persen → hero → manifesto → selected works → kontak (diadaptasi ke struktur minimal kita).
+- **lamalama** → label kurung `[ … ]` sebagai pengganti pill, tipografi raksasa, baris expandable `(+/−)`.
+- **hellohello** → manifesto dengan teks kinetik kata-per-kata mengikuti scroll; daftar awards di `/about`; footer multi-timezone.
+- **onoera** → `/about` yang kalem sebagai penyeimbang: whitespace lega, ritme tenang.
+
+## 3. Arsitektur
+
+- **Routing:** `react-router-dom` — `/`, `/about`, `/contact` (URL asli, bisa di-share langsung).
+- **Kanvas WebGL:** SATU `<canvas>` fixed full-viewport di belakang semua konten, kontinu antar scroll & antar halaman (scene bertransisi saat pindah route, bukan mount/unmount).
+- **Sistem freeform:** grid 12 kolom + elemen absolute yang overlap (gambar di belakang teks, label mono vertikal/diagonal, gambar menabrak viewport edge). Unit berbasis viewport (`clamp`, `vw`) agar collage tetap proporsional di mobile.
+- **Pengganti pill/marquee:** label `[brackets]`, garis/rules, kotak sudut tajam, underline animasi. Gerak dekoratif diganti pinned scroll & hover states.
+
+## 4. Konten per halaman
+
+### `/` — Landing (freeform collage)
+1. **Hero** — nama raksasa overlap dengan visual, role `Designer & Creative Developer`, label `[ just for fun ]` + `[ jakarta — wib ]`, CTA ke `/contact`. State 3D: A.
+2. **Selected Works** — 5 karya pilihan, susunan staggered & overlap, nomor index, hover preview. State 3D: B.
+3. **Full index `(011)`** — daftar kompak semua 11 karya di bawah selected (masih satu blok, gaya archive kavieng). Bukan section baru.
+4. **Manifesto** — 2–4 kalimat, reveal kata-per-kata mengikuti scroll. State 3D: C.
+5. **Footer minimal** — link `/about` + `/contact`, timezone, `© 2026`.
+
+### `/about` — Halaman sendiri (ritme tenang, TANPA foto)
+Bio tipografis + daftar capabilities + selected press/recognition (placeholder) + daftar tools/stack. Tidak ada portrait, tidak ada bulan.
+
+### `/contact` — Halaman sendiri (kasual, placeholder)
+Judul besar "say hi" + email placeholder + social links placeholder + info base/timezone. Tanpa form (mailto + links).
+
+## 5. Daftar karya final (11) — milik user, hotlink ke pages.dev
+
+| # | Judul | Kategori | URL |
+|---|---|---|---|
+| 001 | LEXIER® | Experimental Typography | https://lexier.pages.dev/ |
+| 002 | AELIAN | High Jewelry Editorial | https://aelian.pages.dev/ |
+| 003 | ÉLAN — Issue No. 01 | Fashion Editorial | https://elan-fashion-editorial.pages.dev/ |
+| 004 | VIPERA Émeraude | Luxury Watch | https://vipera-emeraude.pages.dev/ |
+| 005 | Vroeger Koffiehuis | Brand Storytelling | https://vroeger-koffiehuis.pages.dev/ |
+| 006 | Grit & Grace | Jewelry E-commerce | https://grit-and-grace.pages.dev/ |
+| 007 | Cerulean Chic | Fashion Boutique | https://cerulean-chic.pages.dev/ |
+| 008 | CHERIEL | Jewelry Brand | https://cheriel-landing.pages.dev/ |
+| 009 | Aethelgard | Archive / Journal | https://aethelgard-7e0.pages.dev/ |
+| 010 | OCULAR | Sci-fi Cinematic | https://ocular-45z.pages.dev/ |
+| 011 | GLINT | Eyewear & Jewelry Y2K | https://glint-landing-58i.pages.dev/ |
+
+- **Selected (landing collage):** 001–005 (kurasi: variasi kategori terkuat — typo, high jewelry, fashion, watch, storytelling).
+- **Full index:** 001–011.
+- **Tahun:** `'26` untuk semua (koleksi 2026; koreksi jika ada yang beda).
+- **Thumbnail:** hotlink gambar dari tiap situs (user pemiliknya) dengan filter **grayscale permanen** agar tetap dalam aturan 2 warna. Jika hotlink gagal → fallback blok tipografis bernomor.
+
+## 6. Motion system (harus mulus di desktop & mobile)
+
+- **Lenis** untuk smooth scroll (di mobile: smoothing ringan, tetap mengandalkan native momentum agar tidak janky).
+- **GSAP + ScrollTrigger** untuk: transisi state 3D antar bagian, reveal, parallax. HANYA properti `transform`/`opacity` — tidak ada animasi `top/left/width/filter` saat scroll.
+- **Three.js**: satu scene, satu context, DPR dibatasi (desktop ≤ 1.75, mobile ≤ 1.5), pause saat tab hidden & saat canvas tertutup, fallback frame statis jika `prefers-reduced-motion` atau WebGL gagal. Visual 3D WAJIB monokrom; motif ABSTRAK (partikel/grid/distorsi — BUKAN bulan).
+- **Transisi antar halaman:** fade + geser via GSAP (tanpa library tambahan).
+- **Budget:** tidak ada postprocessing berat di mobile; route di-lazy-load; gambar di-optimize.
+
+## 7. Token desain
+
+- Warna: `--void: #0D0D0C`, `--bone: #EAE8E1`. Hierarki hanya via opacity: `100 / 70 / 45 / 25 / 12`.
+- Font: `--sans: "General Sans"` (400/500/600), `--mono: "IBM Plex Mono"` (400/500).
+- Sudut: tajam/kecil (maksimal `rounded-xl` untuk media, tidak ada rounded-full).
+- Citra: grayscale permanen untuk semua thumbnail karya.
+
+## 8. Struktur file yang diusulkan
+
+```
+src/
+  App.tsx                 → router + kanvas global + transisi halaman
+  data/works.ts           → 11 karya (judul, kategori, tahun, url, thumb)
+  routes/
+    Home.tsx              → Hero + SelectedWorks + FullIndex + Manifesto (freeform)
+    About.tsx             → bio tipografis + capabilities + recognition
+    Contact.tsx           → say hi + placeholder links
+  canvas/
+    Scene.tsx             → satu Three.js canvas + state A/B/C
+    shaders/              → GLSL (jika perlu)
+  components/
+    Nav.tsx               → navigasi minimal antar halaman
+    Footer.tsx
+    Reveal.tsx            → helper reveal kinetik
+    Loader.tsx            → loader persen ala inspirux
+  styles/tokens.css       → 2 warna + 2 font + base
+```
+
+## 9. Fase eksekusi (setelah approval)
+
+- **Phase 0** — Branch baru `personal-site/build` dari `main` (branch lama diarsip, tidak di-reset), hapus kode + aset lama yang melanggar aturan, commit `PLAN.md`.
+- **Phase 1** — Fondasi: token, font, router, Lenis, Nav, Loader, kerangka freeform statis.
+- **Phase 2** — Kanvas WebGL + state scenes + reveal kinetik + hover preview.
+- **Phase 3** — Halaman `/about` + `/contact` + transisi route.
+- **Phase 4** — Polish mobile, budget performa, aksesibilitas, final review.
