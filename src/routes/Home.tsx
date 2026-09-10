@@ -136,9 +136,9 @@ export default function Home() {
         </Meta>
 
         <motion.h1
-          initial={{ opacity: 0, y: 60 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1.1, ease: [...EASE] }}
+          transition={{ duration: 1.6, ease: [...EASE] }}
           className="font-sans font-semibold uppercase tracking-[-0.035em] leading-[0.82] text-[clamp(4.2rem,17vw,16rem)]"
         >
           wah:
@@ -148,9 +148,9 @@ export default function Home() {
 
         {/* role line menabrak nama */}
         <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.9, delay: 0.4, ease: [...EASE] }}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.4, delay: 0.5, ease: [...EASE] }}
           className="relative z-10 -mt-3 md:-mt-8 ml-[8vw] md:ml-[30vw]"
         >
           <p className="inline-block bg-void/80 pr-4 font-sans font-medium tracking-tight text-[clamp(1.2rem,3.4vw,2.4rem)]">
@@ -159,11 +159,21 @@ export default function Home() {
         </motion.div>
 
         <div className="grid md:grid-cols-12 gap-6 items-end mt-10 md:mt-14">
-          <p className="md:col-span-4 text-[15px] leading-relaxed text-bone/60 max-w-[34ch]">
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.3, delay: 0.7, ease: [...EASE] }}
+            className="md:col-span-4 text-[15px] leading-relaxed text-bone/60 max-w-[34ch]"
+          >
             Taman bermain satu orang. Aku mendesain &amp; membangun landing page
             fiktif — brand khayalan yang digarap serius.
-          </p>
-          <div className="md:col-span-5 flex items-center gap-8">
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.3, delay: 0.85, ease: [...EASE] }}
+            className="md:col-span-5 flex items-center gap-8"
+          >
             <TLink
               to="/contact"
               className="group font-sans font-medium text-lg underline underline-offset-8 decoration-bone/30 hover:decoration-bone transition-all"
@@ -173,8 +183,15 @@ export default function Home() {
             <TLink to="/about" className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50 hover:text-bone transition-colors">
               [ about ]
             </TLink>
-          </div>
-          <Meta className="md:col-span-3 md:text-right">scroll ↓</Meta>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1.3, delay: 1.0, ease: [...EASE] }}
+            className="md:col-span-3 md:text-right"
+          >
+            <Meta>scroll ↓</Meta>
+          </motion.div>
         </div>
       </section>
 

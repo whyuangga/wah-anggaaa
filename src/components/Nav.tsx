@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { useJakartaTime } from '../hooks/useJakartaTime';
 import { useGo } from '../lib/transition';
 
@@ -14,7 +15,12 @@ export default function Nav() {
   const go = useGo();
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50 mix-blend-difference text-[#EAE8E1]">
+    <motion.header
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.4, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed inset-x-0 top-0 z-50 mix-blend-difference text-[#EAE8E1]"
+    >
       <nav aria-label="Navigasi utama" className="flex items-center justify-between px-5 md:px-10 py-5">
         <button
           onClick={() => go('/')}
@@ -46,6 +52,6 @@ export default function Nav() {
           jkt — {time}
         </p>
       </nav>
-    </header>
+    </motion.header>
   );
 }

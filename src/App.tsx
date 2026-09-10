@@ -32,11 +32,13 @@ function RouteSync({ scrollTop }: { scrollTop: () => void }) {
 function Shell() {
   const lenisRef = useRef<Lenis | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  const [loading, setLoading] = useState(() => {
+  // Ala Onoera: konten TIDAK di-mount sebelum intro selesai,
+  // lalu fade-in kalem berbarengan dengan terangkatnya overlay.
+  const [entered, setEntered] = useState(() => {
     try {
-      return !sessionStorage.getItem(INTRO_KEY);
+      return !!sessionStorage.getItem(INTRO_KEY);
     } catch {
-      return true;
+      return false;
     }
   });
 
@@ -81,50 +83,45 @@ function Shell() {
   // kunci scroll selama intro
   useEffect(() => {
     const lenis = lenisRef.current;
-    if (loading) {
+    if (!entered) {
       lenis?.stop();
       document.body.style.overflow = 'hidden';
     } else {
       lenis?.start();
       document.body.style.overflow = '';
     }
-  }, [loading]);
+  }, [entered]);
 
-  // preload chunk route lain saat idle → transisi tanpa jeda
+  // preload chunk route + scene sejak awal → reveal tanpa jeda
   useEffect(() => {
-    const preload = () => {
-      import('./routes/About').catch(() => {});
-      import('./routes/Contact').catch(() => {});
-      import('./routes/Home').catch(() => {});
-    };
-    if ('requestIdleCallback' in window) {
-      const id = (window as Window & { requestIdleCallback: (cb: () => void) => number }).requestIdleCallback(preload);
-      return () => (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback?.(id);
-    }
-    const id = setTimeout(preload, 1500);
-    return () => clearTimeout(id);
+    import('./routes/Home').catch(() => {});
+    import('./routes/About').catch(() => {});
+    import('./routes/Contact').catch(() => {});
+    import('./canvas/Scene').catch(() => {});
   }, []);
 
   return (
     <TransitionProvider contentRef={contentRef} scrollTop={scrollTop}>
       <div className="min-h-screen bg-void text-bone">
-        <AnimatePresence>{loading && <Loader onDone={() => setLoading(false)} />}</AnimatePresence>
+        <AnimatePresence>{!entered && <Loader onDone={() => setEntered(true)} />}</AnimatePresence>
 
         <Suspense fallback={null}>
           <Scene />
         </Suspense>
 
         <div ref={contentRef} className="relative z-10">
-          <Nav />
+          {entered && <Nav />}
           <RouteSync scrollTop={scrollTop} />
-          <Suspense fallback={null}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="*" element={<Home />} />
-            </Routes>
-          </Suspense>
+          {entered && (
+            <Suspense fallback={null}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="*" element={<Home />} />
+              </Routes>
+            </Suspense>
+          )}
         </div>
       </div>
     </TransitionProvider>

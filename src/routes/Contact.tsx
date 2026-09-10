@@ -16,9 +16,9 @@ export default function Contact() {
         </p>
 
         <motion.h1
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [...EASE] }}
+          transition={{ duration: 1.6, ease: [...EASE] }}
           className="mt-8 font-sans font-semibold uppercase tracking-[-0.035em] leading-[0.82] text-[clamp(4rem,18vw,17rem)]"
         >
           say hi<span className="text-bone/40">.</span>
@@ -26,9 +26,9 @@ export default function Contact() {
 
         <motion.a
           href={`mailto:${CONTACT.email}`}
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, delay: 0.25, ease: [...EASE] }}
+          transition={{ duration: 1.4, delay: 0.5, ease: [...EASE] }}
           className="group inline-block mt-10 md:mt-14 md:ml-[30vw] font-sans font-medium tracking-tight text-[clamp(1.4rem,4vw,3rem)] underline underline-offset-[10px] decoration-bone/30 hover:decoration-bone transition-all"
         >
           {CONTACT.email}

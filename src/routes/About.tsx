@@ -23,9 +23,9 @@ export default function About() {
         <Meta>[ about ]</Meta>
 
         <motion.h1
-          initial={{ opacity: 0, y: 50 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [...EASE] }}
+          transition={{ duration: 1.6, ease: [...EASE] }}
           className="mt-8 font-sans font-semibold uppercase tracking-[-0.03em] leading-[0.88] text-[clamp(3rem,11vw,10rem)]"
         >
           halo, aku

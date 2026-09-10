@@ -22,7 +22,7 @@
 
 ## 1b. Intro & transisi (locked)
 
-- **Intro/loader ala Onoera:** video kecil (±112–128px) di tengah layar void + nama `wah:anggaaa` mono di bawahnya. Video: `public/videos/loader.mp4` (montage kinetik, 3 dtk, 720p, tanpa audio, fade in/out). Loader selesai mengikuti event `ended` video; fallback timeout 4.5 dtk; reduced-motion → teks saja 0.7 dtk. Sekali per session.
+- **Intro/loader ala Onoera:** video kecil (±112–128px) di tengah layar void + nama `wah:anggaaa` mono di bawahnya. Video: `public/videos/loader.mp4` (montage kinetik, 3 dtk, 720p, tanpa audio, fade in/out). Loader selesai mengikuti event `ended` video; fallback timeout 4.5 dtk; reduced-motion → teks saja 0.7 dtk. Sekali per session. Reveal ala Onoera: nav + routes tidak di-mount sebelum intro selesai, lalu fade-in kalem (1.3–1.6 dtk, geser ≤20px, stagger) berbarengan dengan overlay yang terangkat 1.2 dtk.
 - **Transisi antar halaman = 3D morph:** kamera WebGL terbang/bertransisi ke state halaman tujuan + konten lama fade-out → konten baru fade-in. Di mobile: morph disederhanakan (crossfade + sedikit pergerakan kamera) demi 60fps.
 
 ## 2. Pola curian dari 5 referensi
