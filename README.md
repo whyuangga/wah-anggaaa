@@ -232,7 +232,7 @@ dan loader-nya.
     ├── index.css            → @font-face, token @theme, base, .img-mono
     ├── canvas/
     │   ├── bus.ts           → sceneBus: jembatan mutable React → shader
-    │   ├── shaders.ts       → vertex + fragment fbm (uniform uOct adaptif)
+    │   ├── shaders.ts       → vertex + fragment latar void + kilau transisi
     │   └── Scene.tsx        → renderer fullscreen + loop + adaptive quality
     ├── components/
     │   ├── Loader.tsx       → intro video + frame counter rAF + garis progres

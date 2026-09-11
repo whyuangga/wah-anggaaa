@@ -105,7 +105,7 @@ src/
     JournalPost.tsx       → isi tulisan (/journal/:slug)
   canvas/
     Scene.tsx             → satu kanvas fullscreen + adaptive quality
-    shaders.ts            → GLSL fbm monokrom (uniform uOct adaptif)
+    shaders.ts            → GLSL latar void + kilau transisi
     bus.ts                → sceneBus mutable React → shader
   components/
     Nav.tsx               → navigasi minimal antar halaman
