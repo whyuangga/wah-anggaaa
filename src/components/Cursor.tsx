@@ -91,7 +91,7 @@ export default function Cursor() {
   return (
     <>
       <div ref={dotRef} aria-hidden className="pointer-events-none fixed left-0 top-0 z-[200] opacity-0">
-        <span className="block h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white mix-blend-difference" />
+        <span className="block h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-bone mix-blend-difference" />
       </div>
       <div ref={ringRef} aria-hidden className="pointer-events-none fixed left-0 top-0 z-[199] opacity-0">
         <span className="cursor-ring">
