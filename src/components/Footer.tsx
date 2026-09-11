@@ -82,7 +82,7 @@ export default function Footer({ giant = true }: { giant?: boolean }) {
       <div className={`rule h-px w-full ${giant ? 'mt-10 md:mt-14' : ''}`} />
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-bone/50">
-        <p>© 2026 wah:anggaaa</p>
+        <p>© 2026</p>
         <div className="flex items-center gap-6">
           <TLink to="/about" className="hover:text-bone transition-colors">about</TLink>
           <TLink to="/contact" className="hover:text-bone transition-colors">contact</TLink>
