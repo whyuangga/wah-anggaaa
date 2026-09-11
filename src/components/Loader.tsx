@@ -3,20 +3,20 @@ import { motion } from 'motion/react';
 
 const VIDEO_SRC = `${import.meta.env.BASE_URL}videos/loader.mp4`;
 
+const EASE = [0.22, 1, 0.36, 1] as const;
+
 /**
- * Preloader ala Isabel Moranta: kotak video tengah diapit kurung raksasa
- * "( ... )" + teks "( loading )" di bawahnya. Selesai mengikuti video
- * (6 dtk); fallback timeout bila video macet. Keluar via fade sistem
- * reveal yang sudah ada — lalu video hilang total dari hero.
+ * Preloader: video kecil 112px di tengah + "( loading )" di paling bawah
+ * + frame counter mono di kanan bawah. Selesai mengikuti video (6 dtk).
+ * Saat selesai, background hilang duluan (0,7 dtk) — videonya menempel
+ * di hero dan baru fade out belakangan, berbarengan konten hero muncul.
  */
 export default function Loader({ onDone }: { onDone: () => void }) {
   return (
     <motion.div
-      className="fixed inset-0 z-[100] bg-void flex items-center justify-center"
+      className="pointer-events-none fixed inset-0 z-[100]"
       role="status"
       aria-label="Memuat halaman"
-      initial={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 1.2, ease: [0.22, 1, 0.36, 1] } }}
     >
       <LoaderInner onDone={onDone} />
     </motion.div>
@@ -26,24 +26,52 @@ export default function Loader({ onDone }: { onDone: () => void }) {
 function LoaderInner({ onDone }: { onDone: () => void }) {
   const doneRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const boxRef = useRef<HTMLDivElement>(null);
+  const numberRef = useRef<HTMLSpanElement>(null);
+  const rafRef = useRef(0);
+  const startRef = useRef(0);
 
   useEffect(() => {
     const video = videoRef.current;
+    const number = numberRef.current;
+
+    const paint = (p: number) => {
+      if (!number) return;
+      const v = Math.min(1, Math.max(0, p));
+      number.textContent = v >= 1 ? '99' : String(Math.floor(v * 100)).padStart(2, '0');
+    };
+
+    // rAF: counter mengikuti frame video; sintetis bila durasi tak dikenal
+    startRef.current = performance.now();
+    const tick = () => {
+      const dur = video?.duration;
+      let p: number;
+      if (dur && Number.isFinite(dur) && dur > 0) {
+        p = (video?.currentTime ?? 0) / dur;
+      } else {
+        p = (performance.now() - startRef.current) / 6000;
+      }
+      paint(p);
+      if (!doneRef.current) rafRef.current = requestAnimationFrame(tick);
+    };
 
     const finish = () => {
       if (doneRef.current) return;
       doneRef.current = true;
+      cancelAnimationFrame(rafRef.current);
+      paint(1);
       onDone();
     };
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (reduced) {
-      // teks saja, video disembunyikan
-      if (boxRef.current) boxRef.current.style.display = 'none';
+      if (video) video.style.display = 'none';
+      if (number) number.style.display = 'none';
       const id = setTimeout(finish, 700);
       return () => clearTimeout(id);
     }
+
+    paint(0);
+    rafRef.current = requestAnimationFrame(tick);
 
     // fallback: jangan jebak user bila video macet (durasi 6 dtk + buffer)
     const fallback = setTimeout(finish, 7500);
@@ -56,31 +84,33 @@ function LoaderInner({ onDone }: { onDone: () => void }) {
 
     return () => {
       clearTimeout(fallback);
+      cancelAnimationFrame(rafRef.current);
       video?.removeEventListener('ended', onEnded);
       video?.removeEventListener('error', onError);
     };
   }, [onDone]);
 
   return (
-    <div className="flex flex-col items-center px-6">
-      <div className="flex items-center gap-4 md:gap-8">
-        <span
-          aria-hidden
-          className="font-sans font-medium leading-none select-none text-bone/90 text-[clamp(3.5rem,13vw,9rem)]"
-        >
-          (
-        </span>
+    <>
+      {/* latar: hilang duluan saat selesai */}
+      <motion.div
+        aria-hidden
+        className="absolute inset-0 bg-void"
+        exit={{ opacity: 0, transition: { duration: 0.7, ease: [...EASE] } }}
+      />
+      {/* video 112px: menempel di hero, fade belakangan */}
+      <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
-          ref={boxRef}
-          initial={{ opacity: 0, scale: 0.96 }}
+          initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="w-[min(62vw,520px)] aspect-video overflow-hidden bg-[#141412]"
+          transition={{ duration: 0.9, ease: [...EASE] }}
+          exit={{ opacity: 0, transition: { delay: 0.8, duration: 1.2, ease: [...EASE] } }}
+          className="h-28 w-28 overflow-hidden"
         >
           <video
             ref={videoRef}
             src={VIDEO_SRC}
-            className="img-mono w-full h-full object-cover"
+            className="img-mono h-full w-full object-cover"
             muted
             playsInline
             autoPlay
@@ -89,16 +119,23 @@ function LoaderInner({ onDone }: { onDone: () => void }) {
             aria-hidden
           />
         </motion.div>
-        <span
-          aria-hidden
-          className="font-sans font-medium leading-none select-none text-bone/90 text-[clamp(3.5rem,13vw,9rem)]"
-        >
-          )
-        </span>
       </div>
-      <p className="mt-6 md:mt-8 font-mono text-[12px] uppercase tracking-[0.3em] text-bone/60">
+      {/* teks loading: paling bawah */}
+      <motion.p
+        exit={{ opacity: 0, transition: { duration: 0.5, ease: [...EASE] } }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-[12px] uppercase tracking-[0.3em] text-bone/60"
+      >
         ( loading )
-      </p>
-    </div>
+      </motion.p>
+      {/* frame counter mono: kanan bawah */}
+      <motion.span
+        ref={numberRef}
+        aria-hidden
+        exit={{ opacity: 0, transition: { duration: 0.5, ease: [...EASE] } }}
+        className="absolute bottom-6 right-5 font-mono text-[12px] tracking-[0.2em] text-bone/70 tabular-nums"
+      >
+        00
+      </motion.span>
+    </>
   );
 }
