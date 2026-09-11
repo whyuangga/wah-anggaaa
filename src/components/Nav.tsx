@@ -69,7 +69,7 @@ export default function Nav() {
           className="md:hidden p-2 -m-2 cursor-pointer opacity-90"
         >
           <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
-            <g transform="rotate(-28 15 15)" stroke="currentColor" strokeWidth="1.5">
+            <g transform="rotate(28 15 15)" stroke="currentColor" strokeWidth="1.5">
               <line x1="5" y1="10" x2="25" y2="10" />
               <line x1="5" y1="15" x2="25" y2="15" />
               <line x1="5" y1="20" x2="25" y2="20" />
