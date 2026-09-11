@@ -1,7 +1,9 @@
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useJakartaTime } from '../hooks/useJakartaTime';
 import { useGo } from '../lib/transition';
+import MenuOverlay from './MenuOverlay';
 
 const LINKS = [
   { to: '/', label: 'index' },
@@ -14,8 +16,15 @@ export default function Nav() {
   const time = useJakartaTime(false);
   const pathname = useLocation().pathname;
   const go = useGo();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // overlay selalu tertutup setiap pindah halaman
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   return (
+    <>
     <motion.header
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -31,7 +40,7 @@ export default function Nav() {
           wah:anggaaa<sup className="hidden sm:inline font-mono text-[9px] ml-0.5">®</sup>
         </button>
 
-        <div className="flex items-center gap-3 md:gap-8">
+        <div className="hidden md:flex items-center gap-3 md:gap-8">
           {LINKS.map((l) => {
             const active = pathname === l.to || (l.to === '/' && pathname.startsWith('/works/'));
             return (
@@ -52,7 +61,23 @@ export default function Nav() {
         <p className="hidden md:block font-mono text-[11px] tracking-[0.18em] uppercase opacity-55">
           jkt — {time}
         </p>
+
+        <button
+          onClick={() => setMenuOpen(true)}
+          aria-expanded={menuOpen}
+          aria-label="Buka menu"
+          className="md:hidden font-mono text-[11px] uppercase tracking-[0.18em] opacity-80 cursor-pointer"
+        >
+          [ menu ]
+        </button>
       </nav>
     </motion.header>
+    <MenuOverlay
+      open={menuOpen}
+      links={LINKS}
+      pathname={pathname}
+      onClose={() => setMenuOpen(false)}
+    />
+    </>
   );
 }
