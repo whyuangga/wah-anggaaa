@@ -151,14 +151,14 @@ export default function About() {
           {CAPABILITIES.map(([group, items], gi) => (
             <div key={group}>
               <Reveal delay={gi * 0.1}>
-                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/40">
+                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone">
                   {group}
                 </p>
                 <ul className="mt-5 space-y-2">
                   {items.map((item) => (
                     <li
                       key={item}
-                      className="font-mono text-[15px] uppercase tracking-[0.06em] text-bone/80"
+                      className="font-mono text-[15px] tracking-[0.02em] text-bone/80"
                     >
                       {item}
                     </li>
@@ -184,10 +184,10 @@ export default function About() {
         {/* colophon — daftar mono polos ala referensi */}
         <div className="mt-20 md:mt-28">
           <Reveal>
-            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/40">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone">
               colophon
             </p>
-            <ul className="mt-5 space-y-2 font-mono text-[15px] uppercase tracking-[0.06em] text-bone/80">
+            <ul className="mt-5 space-y-2 font-mono text-[15px] tracking-[0.02em] text-bone/80">
               <li>type — general sans + ibm plex mono</li>
               <li>color — #0d0d0c + #eae8e1</li>
               <li>built — react + three.js + gsap</li>
