@@ -66,9 +66,15 @@ export default function Nav() {
           onClick={() => setMenuOpen(true)}
           aria-expanded={menuOpen}
           aria-label="Buka menu"
-          className="md:hidden font-mono text-[11px] uppercase tracking-[0.18em] opacity-80 cursor-pointer"
+          className="md:hidden p-2 -m-2 cursor-pointer opacity-90"
         >
-          [ menu ]
+          <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
+            <g transform="rotate(-28 15 15)" stroke="currentColor" strokeWidth="1.5">
+              <line x1="5" y1="10" x2="25" y2="10" />
+              <line x1="5" y1="15" x2="25" y2="15" />
+              <line x1="5" y1="20" x2="25" y2="20" />
+            </g>
+          </svg>
         </button>
       </nav>
     </motion.header>
