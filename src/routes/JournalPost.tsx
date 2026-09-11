@@ -99,7 +99,7 @@ export default function JournalPost() {
         </div>
       </section>
 
-      <Footer giant={false} />
+      <Footer giant={false} rule={false} />
     </>
   );
 }

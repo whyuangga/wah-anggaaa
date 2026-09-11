@@ -8,7 +8,7 @@ import { TLink } from '../lib/transition';
 const EASE = [0.22, 1, 0.36, 1] as const;
 const WORD = 'wah:anggaaa'.split('');
 
-export default function Footer({ giant = true }: { giant?: boolean }) {
+export default function Footer({ giant = true, rule = true }: { giant?: boolean; rule?: boolean }) {
   const time = useJakartaTime();
   const status = useStudioStatus();
   const wordRef = useRef<HTMLSpanElement>(null);
@@ -79,7 +79,7 @@ export default function Footer({ giant = true }: { giant?: boolean }) {
       </TLink>
       )}
 
-      <div className={`rule h-px w-full ${giant ? 'mt-10 md:mt-14' : ''}`} />
+      {rule && <div className={`rule h-px w-full ${giant ? 'mt-10 md:mt-14' : ''}`} />}
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-bone/50">
         <p>© 2026</p>
