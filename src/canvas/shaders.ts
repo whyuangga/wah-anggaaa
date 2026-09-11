@@ -83,10 +83,6 @@ void main() {
   col += BONE * shimmer * band;
   col += BONE * uMorph * 0.10 * (0.5 + 0.5 * sin(uv.x * 20.0 + uTime * 8.0));
 
-  // grain film
-  float gr = hash(uv * uRes + fract(uTime) * 100.0) - 0.5;
-  col += BONE * gr * 0.035;
-
   // vignette
   float vig = smoothstep(1.25, 0.35, distance(uv, vec2(0.5)));
   col = mix(VOIDC * 0.85, col, mix(0.6, 1.0, vig));
