@@ -14,7 +14,7 @@ export default function Journal() {
         path="/journal"
         description="Jurnal wahanggaaa — catatan proses, eksperimen gagal, dan opini sok tahu. Tanpa jadwal terbit."
       />
-      <section data-scene={2} className="px-5 md:px-10 pt-32 md:pt-44 min-h-[70vh]">
+      <section data-scene={2} className="px-5 md:px-10 pt-32 md:pt-44">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50">
           [ jurnal — {String(POSTS.length).padStart(3, '0')} tulisan ]
         </p>
