@@ -156,7 +156,7 @@ export default function About() {
                   {items.map((item) => (
                     <li
                       key={item}
-                      className="font-mono text-[15px] leading-[1.2] tracking-[0.02em] text-bone"
+                      className="font-mono text-[15px] leading-[1.2] tracking-[-0.6px] text-bone"
                     >
                       {item}
                     </li>
@@ -185,7 +185,7 @@ export default function About() {
             <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-bone/45">
               colophon
             </p>
-            <ul className="mt-4 space-y-0 font-mono text-[15px] leading-[1.2] tracking-[0.02em] text-bone">
+            <ul className="mt-4 space-y-0 font-mono text-[15px] leading-[1.2] tracking-[-0.6px] text-bone">
               <li>type — general sans + ibm plex mono</li>
               <li>color — #020202 + #eae8e1</li>
               <li>built — react + three.js + gsap</li>
