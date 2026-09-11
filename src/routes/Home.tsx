@@ -465,7 +465,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.3, delay: 0.7, ease: [...EASE] }}
-            className="md:col-span-4 text-[15px] leading-relaxed text-bone/60 max-w-[34ch]"
+            className="md:col-span-4 text-[15px] leading-relaxed text-bone/85 max-w-[34ch]"
           >
             Taman bermain satu orang milik Angga — dibangun di jam-jam
             curian: tanpa klien, tanpa brief, cuma obsesi.

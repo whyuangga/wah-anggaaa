@@ -160,7 +160,7 @@ img {
 
 /* isi tulisan jurnal (html dari parser mini) */
 .md-body > * + * { margin-top: 1.4em; }
-.md-body { font-size: 16.5px; line-height: 1.75; color: color-mix(in srgb, var(--color-bone) 72%, transparent); }
+.md-body { font-size: 16.5px; line-height: 1.75; color: color-mix(in srgb, var(--color-bone) 85%, transparent); }
 .md-body h2 { font-family: var(--font-sans); font-weight: 600; letter-spacing: -0.02em; font-size: 1.5em; line-height: 1.15; color: var(--color-bone); margin-top: 2.2em !important; }
 .md-body strong { color: var(--color-bone); font-weight: 600; }
 .md-body code { font-family: var(--font-mono); font-size: 0.85em; color: var(--color-bone); background: color-mix(in srgb, var(--color-bone) 8%, transparent); padding: 0.15em 0.4em; }
@@ -170,7 +170,7 @@ img {
 .md-body a:hover { text-decoration-color: var(--color-bone); }
 .md-body ul { list-style: none; padding: 0; }
 .md-body li { padding-left: 1.4em; position: relative; }
-.md-body li + li { margin-top: 0.5em; }
+.md-body li + li { margin-top: 0.25em; }
 .md-body li::before { content: '—'; position: absolute; left: 0; color: color-mix(in srgb, var(--color-bone) 40%, transparent); }
 .md-body blockquote { border-left: 1px solid color-mix(in srgb, var(--color-bone) 30%, transparent); padding-left: 1.2em; font-style: italic; color: var(--color-bone); }
 .md-body hr { border: none; border-top: 1px solid color-mix(in srgb, var(--color-bone) 15%, transparent); margin: 2.5em 0 !important; }

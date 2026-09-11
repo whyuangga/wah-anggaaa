@@ -57,7 +57,7 @@ export default function Journal() {
                 <span className="md:col-span-6 font-sans font-medium tracking-tight text-[clamp(1.4rem,3.4vw,2.4rem)] leading-tight group-hover:opacity-70 transition-opacity">
                   {p.title}
                 </span>
-                <span className="md:col-span-3 text-[14px] leading-relaxed text-bone/50">
+                <span className="md:col-span-3 text-[14px] leading-relaxed text-bone/70">
                   {p.desc}
                 </span>
                 <span className="md:col-span-2 md:text-right font-mono text-[11px] uppercase tracking-[0.16em] text-bone/40">

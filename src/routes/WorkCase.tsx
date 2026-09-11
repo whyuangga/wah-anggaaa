@@ -130,22 +130,22 @@ export default function WorkCase() {
           <div className="md:col-span-4">
             <Reveal>
               <Meta>[ ringkasan ]</Meta>
-              <dl className="mt-6 space-y-4 font-mono text-[11px] uppercase tracking-[0.16em]">
-                <div className="flex justify-between border-t border-bone/15 pt-3">
+              <dl className="mt-6 space-y-2 font-mono text-[11px] uppercase tracking-[0.16em]">
+                <div className="flex justify-between">
                   <dt className="text-bone/40">klien</dt>
-                  <dd className="text-bone/70">fiktif belaka</dd>
+                  <dd className="text-bone">fiktif belaka</dd>
                 </div>
-                <div className="flex justify-between border-t border-bone/15 pt-3">
+                <div className="flex justify-between">
                   <dt className="text-bone/40">tahun</dt>
-                  <dd className="text-bone/70">{w.year}</dd>
+                  <dd className="text-bone">{w.year}</dd>
                 </div>
-                <div className="flex justify-between border-t border-bone/15 pt-3">
+                <div className="flex justify-between">
                   <dt className="text-bone/40">peran</dt>
-                  <dd className="text-bone/70">{w.role}</dd>
+                  <dd className="text-bone">{w.role}</dd>
                 </div>
-                <div className="flex justify-between border-t border-bone/15 pt-3">
+                <div className="flex justify-between">
                   <dt className="text-bone/40">stack</dt>
-                  <dd className="text-bone/70 text-right">{w.stack.join(' / ')}</dd>
+                  <dd className="text-bone text-right">{w.stack.join(' / ')}</dd>
                 </div>
               </dl>
             </Reveal>
@@ -182,7 +182,7 @@ export default function WorkCase() {
                     [ langkah {String(i + 1).padStart(2, '0')} ]
                   </p>
                   <Reveal delay={0.05} className="md:col-span-6">
-                    <p className="text-[16px] md:text-[17px] leading-relaxed text-bone/70 max-w-xl">
+                    <p className="text-[16px] md:text-[17px] leading-relaxed text-bone/85 max-w-xl">
                       {p}
                     </p>
                   </Reveal>

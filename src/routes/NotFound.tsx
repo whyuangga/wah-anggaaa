@@ -32,7 +32,7 @@ export default function NotFound() {
           transition={{ duration: 1.3, delay: 0.4, ease: [...EASE] }}
           className="mt-10 md:ml-[40vw]"
         >
-          <p className="text-[15px] leading-relaxed text-bone/60 max-w-[34ch]">
+          <p className="text-[15px] leading-relaxed text-bone/85 max-w-[34ch]">
             Halaman yang kamu cari nggak ada — mungkin belum dibuat, atau sudah
             dihapus karena keisengan.
           </p>
