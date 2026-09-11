@@ -49,7 +49,7 @@ export default function Journal() {
             >
               <TLink
                 to={`/journal/${p.slug}`}
-                className="group grid md:grid-cols-12 gap-2 md:gap-6 py-8 border-b border-bone/15"
+                className={`group grid md:grid-cols-12 gap-2 md:gap-6 py-8 ${i < POSTS.length - 1 ? 'border-b border-bone/15' : ''}`}
               >
                 <span className="md:col-span-1 font-mono text-[11px] tracking-[0.18em] text-bone/40">
                   {String(POSTS.length - i).padStart(3, '0')}
@@ -69,7 +69,7 @@ export default function Journal() {
         </div>
       </section>
 
-      <Footer giant={false} />
+      <Footer giant={false} rule={false} />
     </>
   );
 }
