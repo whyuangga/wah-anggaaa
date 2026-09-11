@@ -100,7 +100,7 @@ function LoaderInner({ onDone }: { onDone: () => void }) {
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: [...EASE] }}
-          exit={{ opacity: 0, transition: { delay: 0.6, duration: 1.6, ease: [...EASE] } }}
+          exit={{ opacity: 0, transition: { delay: 0.3, duration: 0.9, ease: [...EASE] } }}
           className="h-28 w-28 overflow-hidden"
         >
           <video
