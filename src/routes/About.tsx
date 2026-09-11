@@ -96,30 +96,7 @@ export default function About() {
     [],
   );
 
-  // baris capabilities meluncur dari kanan ke kiri mengikuti scroll —
-  // plek resep Inspirux (x 35% → 0, scrub per baris).
-  useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>('.cap-row').forEach((el) => {
-        gsap.fromTo(
-          el,
-          { x: '35%' },
-          {
-            x: '0%',
-            ease: 'none',
-            scrollTrigger: {
-              trigger: el,
-              start: 'top 90%',
-              end: 'bottom +=70%',
-              scrub: 1,
-            },
-          },
-        );
-      });
-    });
-    return () => ctx.revert();
-  }, []);
+  // (dulu: baris capabilities scrub horizontal — dicabut, kini daftar mono polos)
 
   return (
     <>
@@ -169,18 +146,19 @@ export default function About() {
           </div>
         </div>
 
-        {/* capabilities */}
-        <div className="grid md:grid-cols-12 gap-10 mt-20 md:mt-32">
-          <Meta>[ capabilities ]</Meta>
+        {/* capabilities — daftar mono polos ala referensi */}
+        <div className="grid sm:grid-cols-2 gap-12 sm:gap-10 mt-20 md:mt-32 max-w-3xl">
           {CAPABILITIES.map(([group, items], gi) => (
-            <div key={group} className={`md:col-span-4 ${gi === 0 ? 'md:col-start-3' : ''}`}>
-              <Reveal delay={gi * 0.12}>
-                <p className="font-sans font-medium text-xl mb-5">{group}</p>
-                <ul className="border-t border-bone/15">
+            <div key={group}>
+              <Reveal delay={gi * 0.1}>
+                <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/40">
+                  {group}
+                </p>
+                <ul className="mt-5 space-y-2">
                   {items.map((item) => (
                     <li
                       key={item}
-                      className="cap-row will-change-transform py-4 border-b border-bone/15 font-mono text-[12px] uppercase tracking-[0.16em] text-bone/60"
+                      className="font-mono text-[15px] uppercase tracking-[0.06em] text-bone/80"
                     >
                       {item}
                     </li>
@@ -203,15 +181,17 @@ export default function About() {
           </div>
         </div>
 
-        {/* colophon */}
-        <div className="mt-20 md:mt-32">
+        {/* colophon — daftar mono polos ala referensi */}
+        <div className="mt-20 md:mt-28">
           <Reveal>
-            <Meta>[ colophon ]</Meta>
-            <div className="mt-6 grid sm:grid-cols-3 gap-6 font-mono text-[12px] uppercase tracking-[0.16em] text-bone/60">
-              <p>type — general sans + ibm plex mono</p>
-              <p>color — #0d0d0c + #eae8e1</p>
-              <p>built — react + three.js + gsap</p>
-            </div>
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/40">
+              colophon
+            </p>
+            <ul className="mt-5 space-y-2 font-mono text-[15px] uppercase tracking-[0.06em] text-bone/80">
+              <li>type — general sans + ibm plex mono</li>
+              <li>color — #0d0d0c + #eae8e1</li>
+              <li>built — react + three.js + gsap</li>
+            </ul>
           </Reveal>
         </div>
 
