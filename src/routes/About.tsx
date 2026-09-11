@@ -122,7 +122,7 @@ export default function About() {
         </h1>
 
         <div className="grid md:grid-cols-12 gap-10 mt-12 md:mt-20">
-          <div className="md:col-span-5 md:col-start-7 space-y-6 text-[16px] leading-relaxed text-bone/70">
+          <div className="md:col-span-5 md:col-start-7 space-y-6 text-[16px] leading-relaxed text-bone/85">
             <Reveal>
               <p>
                 <span className="text-bone">wah:anggaaa adalah taman bermain satu orang</span>{' '}
@@ -145,18 +145,18 @@ export default function About() {
         </div>
 
         {/* capabilities — daftar mono polos ala referensi */}
-        <div className="grid sm:grid-cols-2 gap-12 sm:gap-10 mt-20 md:mt-32 max-w-3xl">
+        <div className="grid sm:grid-cols-2 gap-12 sm:gap-10 mt-20 md:mt-28 max-w-3xl">
           {CAPABILITIES.map(([group, items], gi) => (
             <div key={group}>
               <Reveal delay={gi * 0.1}>
-                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-bone">
+                <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-bone/45">
                   {group}
                 </p>
-                <ul className="mt-5 space-y-2">
+                <ul className="mt-5 space-y-1.5">
                   {items.map((item) => (
                     <li
                       key={item}
-                      className="font-mono text-[15px] tracking-[0.02em] text-bone/80"
+                      className="font-mono text-[15px] leading-[1.45] tracking-[0.02em] text-bone"
                     >
                       {item}
                     </li>
@@ -168,13 +168,13 @@ export default function About() {
         </div>
 
         {/* recognition */}
-        <div className="mt-20 md:mt-32 md:ml-[40vw]">
+        <div className="mt-20 md:mt-28 md:ml-[40vw]">
           <Meta>[ recognition ]</Meta>
           <div className="mt-6">
             <DriftLines
               lineA="Belum ada —"
               lineB="iseng-iseng dulu."
-              className="font-sans font-medium tracking-tight text-[clamp(1.5rem,3.5vw,2.5rem)] text-bone/70"
+              className="font-sans font-medium tracking-tight text-[clamp(1.5rem,3.5vw,2.5rem)] text-bone/85"
             />
           </div>
         </div>
@@ -182,10 +182,10 @@ export default function About() {
         {/* colophon — daftar mono polos ala referensi */}
         <div className="mt-20 md:mt-28">
           <Reveal>
-            <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-bone">
+            <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-bone/45">
               colophon
             </p>
-            <ul className="mt-5 space-y-2 font-mono text-[15px] tracking-[0.02em] text-bone/80">
+            <ul className="mt-5 space-y-1.5 font-mono text-[15px] leading-[1.45] tracking-[0.02em] text-bone">
               <li>type — general sans + ibm plex mono</li>
               <li>color — #020202 + #eae8e1</li>
               <li>built — react + three.js + gsap</li>
