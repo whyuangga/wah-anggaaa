@@ -101,6 +101,8 @@ src/
     About.tsx             → bio + drift horizontal ala Inspirux + capabilities
     Contact.tsx           → say hi + placeholder links + generator brand
     WorkCase.tsx          → case-study per karya (/works/:slug)
+    Journal.tsx           → daftar tulisan (/journal)
+    JournalPost.tsx       → isi tulisan (/journal/:slug)
   canvas/
     Scene.tsx             → satu kanvas fullscreen + adaptive quality
     shaders.ts            → GLSL fbm monokrom (uniform uOct adaptif)

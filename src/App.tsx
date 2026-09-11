@@ -9,6 +9,7 @@ import Loader from './components/Loader';
 import Cursor from './components/Cursor';
 import { sceneBus } from './canvas/bus';
 import { TransitionProvider } from './lib/transition';
+import { Analytics } from '@vercel/analytics/react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,6 +18,8 @@ const About = lazy(() => import('./routes/About'));
 const Contact = lazy(() => import('./routes/Contact'));
 const WorkCase = lazy(() => import('./routes/WorkCase'));
 const NotFound = lazy(() => import('./routes/NotFound'));
+const Journal = lazy(() => import('./routes/Journal'));
+const JournalPost = lazy(() => import('./routes/JournalPost'));
 const Scene = lazy(() => import('./canvas/Scene'));
 
 /** Sinkron route → bus scene + scroll atas + refresh trigger. */
@@ -135,6 +138,8 @@ function Shell() {
     import('./routes/Contact').catch(() => {});
     import('./routes/WorkCase').catch(() => {});
     import('./routes/NotFound').catch(() => {});
+    import('./routes/Journal').catch(() => {});
+    import('./routes/JournalPost').catch(() => {});
     import('./canvas/Scene').catch(() => {});
   }, []);
 
@@ -159,12 +164,15 @@ function Shell() {
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
                 <Route path="/works/:slug" element={<WorkCase />} />
+                <Route path="/journal" element={<Journal />} />
+                <Route path="/journal/:slug" element={<JournalPost />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </Suspense>
           )}
         </div>
       </div>
+      <Analytics />
     </TransitionProvider>
   );
 }

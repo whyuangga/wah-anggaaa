@@ -84,6 +84,7 @@ export default function Footer() {
         <div className="flex items-center gap-6">
           <TLink to="/about" className="hover:text-bone transition-colors">about</TLink>
           <TLink to="/contact" className="hover:text-bone transition-colors">contact</TLink>
+          <TLink to="/journal" className="hover:text-bone transition-colors">journal</TLink>
         </div>
         <p>
           jakarta — {time} <span className="text-bone/30">[ just for fun ]</span>

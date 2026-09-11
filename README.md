@@ -219,11 +219,12 @@ dan loader-nya.
 
 ```
 ├── PLAN.md                  → spesifikasi yang disetujui user (acuan kerja)
-├── vercel.json              → rewrite SPA /about & /contact
+├── vercel.json              → rewrite SPA /about /contact /works/* /journal*
 ├── public/
 │   ├── _redirects           → (cadangan redirect SPA)
 │   ├── og.jpg               → preview share sosial 1200×630 (monokrom)
-│   ├── images/works/        → 11 thumbnail webp self-hosted (±896KB total)
+│   ├── images/works/        → 11 hero + 29 galeri webp + 11 og jpg (±3.5MB)
+│   ├── robots.txt + sitemap.xml → SEO (sitemap dibuat saat prebuild)
 │   └── videos/loader.mp4    → video intro kinetik ±3 dtk (720p, tanpa audio)
 └── src/
     ├── main.tsx             → entry: Router + Lenis + Scene + Loader gate
@@ -237,14 +238,19 @@ dan loader-nya.
     │   ├── Loader.tsx       → intro video + frame counter rAF + garis progres
     │   ├── Nav.tsx          → navigasi fixed transparan (TLink)
     │   ├── Cursor.tsx       → kursor custom desktop (rAF lerp + label data-cursor)
-    │   └── Footer.tsx       → footer raksasa (cascade huruf + wave hover) + jam + status studio
+    │   ├── Footer.tsx       → footer raksasa (cascade huruf + wave hover) + jam + status studio
+    │   └── Seo.tsx          → title/desc/OG kanonis + JSON-LD per route
     ├── routes/
     │   ├── Home.tsx         → hero + Works (Lallé grid/spotlight/overlay) + manifesto scrub
     │   ├── About.tsx        → profil + drift horizontal + capability + kolofon
     │   ├── Contact.tsx      → email + sosial + generator brand khayalan + status
     │   ├── WorkCase.tsx     → case-study per karya (/works/:slug)
+    │   ├── Journal.tsx        → daftar tulisan (/journal)
+    │   ├── JournalPost.tsx    → isi tulisan (/journal/:slug)
     │   └── NotFound.tsx     → halaman 404 ("nyasar.")
-    ├── data/works.ts        → 11 karya: judul, kategori, tahun, thumb lokal, blur, blurb, url
+    ├── data/works.ts        → 11 karya: meta + thumb/galeri/blur + story + challenge/outcome + stats
+    ├── lib/journal.ts       → loader + parser markdown jurnal
+    ├── content/journal/       → tulisan *.md + frontmatter (tambah file = terbit)
     ├── hooks/
     │   ├── useSceneSections.ts → ScrollTrigger → section aktif ke sceneBus
     │   ├── useJakartaTime.ts   → jam WIB live per detik
@@ -313,6 +319,8 @@ Satu codebase, dua target — dibedakan otomatis oleh `vite.config.ts`:
 | Email & sosial  | `src/routes/Contact.tsx` (`halo@wahanggaaa.id`, `#`) |
 | Teks manifesto  | `src/routes/Home.tsx` → `ManifestoScrub text=` |
 | Video loader    | `public/videos/loader.mp4` |
+| Tulisan jurnal  | tambah `content/journal/slug.md` (frontmatter: title/date/desc/tags) |
+| Domain SEO      | `src/components/Seo.tsx` (`SITE_URL`) + `scripts/sitemap.mjs` (`SITE`) |
 | Warna / font    | `src/index.css` (`@theme`) |
 | Copy about      | `src/routes/About.tsx` |
 

@@ -4,6 +4,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import Footer from '../components/Footer';
+import Seo from '../components/Seo';
 import { TLink } from '../lib/transition';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -122,6 +123,7 @@ export default function About() {
 
   return (
     <>
+      <Seo title="tentang" path="/about" />
       <section className="px-5 md:px-10 pt-32 md:pt-44 overflow-x-clip">
         <Meta>[ about ]</Meta>
 

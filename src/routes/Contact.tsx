@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Footer from '../components/Footer';
+import Seo from '../components/Seo';
 import { CONTACT } from '../data/works';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -85,6 +86,7 @@ function BrandGenerator() {
 export default function Contact() {
   return (
     <>
+      <Seo title="kontak" path="/contact" />
       <section className="px-5 md:px-10 pt-32 md:pt-44 min-h-[80svh]">
         <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50">
           [ contact ]

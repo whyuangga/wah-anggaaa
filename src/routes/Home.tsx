@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Footer from '../components/Footer';
+import Seo from '../components/Seo';
 import { TLink, useGo } from '../lib/transition';
 import { WORKS } from '../data/works';
 import { useSceneSections } from '../hooks/useSceneSections';
@@ -409,6 +410,7 @@ export default function Home() {
 
   return (
     <>
+      <Seo />
       {/* ============ HERO — freeform ============ */}
       <section data-scene={0} className="relative min-h-svh flex flex-col justify-end overflow-hidden px-5 md:px-10 pt-24 pb-8">
         <Meta className="absolute top-24 md:top-28 left-5 md:left-10">[ portfolio — vol.01 ]</Meta>

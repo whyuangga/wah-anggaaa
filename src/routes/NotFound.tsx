@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import Footer from '../components/Footer';
+import Seo from '../components/Seo';
 import { TLink } from '../lib/transition';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
@@ -7,6 +8,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export default function NotFound() {
   return (
     <>
+      <Seo title="404" noindex path="/404" />
       <section className="px-5 md:px-10 pt-32 md:pt-44 min-h-[72vh]">
         <motion.p
           initial={{ opacity: 0, y: 14 }}

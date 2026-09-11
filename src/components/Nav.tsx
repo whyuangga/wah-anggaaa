@@ -7,6 +7,7 @@ const LINKS = [
   { to: '/', label: 'index' },
   { to: '/about', label: 'about' },
   { to: '/contact', label: 'contact' },
+  { to: '/journal', label: 'journal' },
 ];
 
 export default function Nav() {
@@ -27,10 +28,10 @@ export default function Nav() {
           className="font-sans font-medium tracking-tight text-[17px] leading-none cursor-pointer"
           aria-label="wah:anggaaa — ke halaman index"
         >
-          wah:anggaaa<sup className="font-mono text-[9px] ml-0.5">®</sup>
+          wah:anggaaa<sup className="hidden sm:inline font-mono text-[9px] ml-0.5">®</sup>
         </button>
 
-        <div className="flex items-center gap-5 md:gap-8">
+        <div className="flex items-center gap-3 md:gap-8">
           {LINKS.map((l) => {
             const active = pathname === l.to || (l.to === '/' && pathname.startsWith('/works/'));
             return (
