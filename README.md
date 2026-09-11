@@ -225,7 +225,7 @@ dan loader-nya.
 │   ├── og.jpg               → preview share sosial 1200×630 (monokrom)
 │   ├── images/works/        → 11 hero + 29 galeri webp + 11 og jpg (±3.5MB)
 │   ├── robots.txt + sitemap.xml → SEO (sitemap dibuat saat prebuild)
-│   └── videos/loader.mp4    → video intro kinetik ±3 dtk (720p, tanpa audio)
+│   └── videos/loader.mp4    → film damage 6 dtk (720p, tanpa audio)
 └── src/
     ├── main.tsx             → entry: Router + Lenis + Scene + Loader gate
     ├── App.tsx              → shell: Nav, Routes, TransitionProvider, overlay lock
