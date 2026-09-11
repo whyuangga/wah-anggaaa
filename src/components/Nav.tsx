@@ -66,7 +66,7 @@ export default function Nav() {
           onClick={() => setMenuOpen(true)}
           aria-expanded={menuOpen}
           aria-label="Buka menu"
-          className="md:hidden p-2 -m-2 cursor-pointer opacity-90"
+          className="md:hidden p-2 -m-2 -translate-y-0.5 cursor-pointer opacity-90"
         >
           <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden>
             <g transform="rotate(28 15 15)" stroke="currentColor" strokeWidth="1.5">
