@@ -134,7 +134,7 @@ function Works() {
   // kunci scroll halaman saat overlay dibuka (App mendengarkan event ini)
   useEffect(() => {
     window.dispatchEvent(new CustomEvent('works-overlay', { detail: { open: open !== null } }));
-  }, [open ]);
+  }, [open]);
 
   // keyboard: esc tutup, panah pindah karya
   useEffect(() => {
@@ -146,7 +146,7 @@ function Works() {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [open ]);
+  }, [open]);
 
   // scroll-spy khusus sentuh: spotlight mengikuti gambar yang terlihat
   useEffect(() => {
@@ -513,7 +513,7 @@ export default function Home() {
         </div>
       </section>
 
-      <Footer />
+      <Footer giant={false} />
     </>
   );
 }

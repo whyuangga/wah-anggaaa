@@ -96,8 +96,6 @@ export default function About() {
     [],
   );
 
-  // (dulu: baris capabilities scrub horizontal — dicabut, kini daftar mono polos)
-
   return (
     <>
       <Seo title="tentang" path="/about" />

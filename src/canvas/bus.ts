@@ -3,7 +3,7 @@
  * transisi), dibaca tiap frame oleh Scene. Tanpa re-render React.
  */
 export const sceneBus = {
-  /** route aktif: '/', '/about', '/contact', '/works/:slug' */
+  /** route aktif: '/', '/about', '/contact', '/works/:slug', '/journal*' */
   route: '/',
   /** section home yang sedang dominan: 0 hero, 1 works, 2 manifesto */
   section: 0,
@@ -20,5 +20,6 @@ export function sceneTarget(): number {
   if (sceneBus.route === '/about') return 3;
   if (sceneBus.route === '/contact') return 4;
   if (sceneBus.route.startsWith('/works/')) return 1;
+  if (sceneBus.route.startsWith('/journal')) return 2;
   return Math.min(2, Math.max(0, sceneBus.section));
 }

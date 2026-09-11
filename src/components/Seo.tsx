@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-/** ganti saat domain final — dipakai sitemap, canonical, og:url */
+/** domain kanonis — samakan dengan index.html, sitemap, robots */
 export const SITE_URL = 'https://wah-anggaaa.vercel.app';
 export const SITE_NAME = 'wahanggaaa®';
 

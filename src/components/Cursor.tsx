@@ -85,7 +85,7 @@ export default function Cursor() {
       window.removeEventListener('mousemove', onMove);
       document.documentElement.removeEventListener('mouseleave', onLeave);
     };
-  }, [on ]);
+  }, [on]);
 
   if (!on) return null;
   return (

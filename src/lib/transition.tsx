@@ -19,6 +19,14 @@ type GoFn = (to: string) => void;
 const GoContext = createContext<GoFn>(() => {});
 export const useGo = () => useContext(GoContext);
 
+/** status aktif nav: case study ikut index, postingan ikut journal. */
+export function isActivePath(to: string, pathname: string): boolean {
+  if (pathname === to) return true;
+  if (to === '/' && pathname.startsWith('/works/')) return true;
+  if (to === '/journal' && pathname.startsWith('/journal/')) return true;
+  return false;
+}
+
 type ProviderProps = {
   children: ReactNode;
   contentRef: RefObject<HTMLDivElement | null>;
@@ -122,8 +130,10 @@ export function TLink({ to, children, className, ariaLabel }: TLinkProps) {
     e.preventDefault();
     go(to);
   };
+  // href sadar basename: klik modifier / tab baru tetap benar di Pages
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   return (
-    <a href={to} onClick={onClick} className={className} aria-label={ariaLabel}>
+    <a href={`${base}${to}`} onClick={onClick} className={className} aria-label={ariaLabel}>
       {children}
     </a>
   );

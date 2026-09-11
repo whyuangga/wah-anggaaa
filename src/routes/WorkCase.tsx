@@ -15,13 +15,22 @@ function Meta({ children }: { children: ReactNode }) {
   );
 }
 
-function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
+function Reveal({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 32 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.9, delay, ease: [...EASE] }}
+      className={className}
     >
       {children}
     </motion.div>
@@ -73,7 +82,7 @@ export default function WorkCase() {
         type="article"
         path={`/works/${w.slug}`}
       />
-      <section className="px-5 md:px-10 pt-32 md:pt-44">
+      <section className="px-5 md:px-10 pt-32 md:pt-44 pb-20 md:pb-28">
         <Meta>[ case — {w.index} / 011 ]</Meta>
 
         <motion.h1
@@ -172,8 +181,8 @@ export default function WorkCase() {
                   <p className="md:col-span-5 md:col-start-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-bone">
                     [ langkah {String(i + 1).padStart(2, '0')} ]
                   </p>
-                  <Reveal delay={0.05}>
-                    <p className="md:col-span-6 text-[16px] md:text-[17px] leading-relaxed text-bone/70 max-w-xl">
+                  <Reveal delay={0.05} className="md:col-span-6">
+                    <p className="text-[16px] md:text-[17px] leading-relaxed text-bone/70 max-w-xl">
                       {p}
                     </p>
                   </Reveal>

@@ -179,7 +179,7 @@ function Shell() {
 
 export default function App() {
   return (
-    // BASE_URL: '/' saat dev lokal tertentu, '/wah-anggaaa/' di Pages —
+    // BASE_URL: '/' di Vercel, '/wah-anggaaa/' di dev lokal & Pages —
     // basename router selalu mengikutinya.
     <BrowserRouter basename={import.meta.env.BASE_URL}>
       <Shell />

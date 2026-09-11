@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
-import { useGo } from '../lib/transition';
+import { isActivePath, useGo } from '../lib/transition';
 
 export interface MenuLink {
   to: string;
@@ -28,15 +28,21 @@ export default function MenuOverlay({ open, links, pathname, onClose }: MenuOver
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
     };
+    // resize ke desktop saat terbuka: tutup (overlay md:hidden, scroll jangan kekunci)
+    const mq = window.matchMedia('(min-width: 768px)');
+    const onMq = () => {
+      if (mq.matches) onClose();
+    };
     window.addEventListener('keydown', onKey);
+    mq.addEventListener('change', onMq);
     return () => {
       document.body.style.overflow = prev;
       window.removeEventListener('keydown', onKey);
+      mq.removeEventListener('change', onMq);
     };
   }, [open, onClose]);
 
-  const isActive = (to: string) =>
-    pathname === to || (to === '/' && pathname.startsWith('/works/'));
+  const isActive = (to: string) => isActivePath(to, pathname);
 
   return (
     <AnimatePresence>
@@ -58,7 +64,7 @@ export default function MenuOverlay({ open, links, pathname, onClose }: MenuOver
             <button
               onClick={onClose}
               aria-label="Tutup menu"
-              className="p-1 -m-1 cursor-pointer"
+              className="p-2 -m-2 cursor-pointer"
             >
               <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden>
                 <line x1="4" y1="4" x2="22" y2="22" stroke="currentColor" strokeWidth="1.5" />

@@ -16,7 +16,11 @@ const files = import.meta.glob('../../content/journal/*.md', {
 }) as Record<string, string>;
 
 function esc(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
 }
 
 /** inline: code, bold, italic, link (setelah escape) */
