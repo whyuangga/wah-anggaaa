@@ -38,7 +38,7 @@
 }
 
 @theme {
-  --color-void: #0d0d0c;
+  --color-void: #020202;
   --color-bone: #eae8e1;
 
   --font-sans: "General Sans", ui-sans-serif, system-ui, sans-serif;
@@ -72,7 +72,7 @@ body {
   width: 10px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d0d0c;
+  background: #020202;
 }
 ::-webkit-scrollbar-thumb {
   background: #2b2b28;

@@ -21,7 +21,7 @@ uniform float uIntro;
 uniform float uVel;
 uniform float uOct;
 
-const vec3 VOIDC = vec3(0.051, 0.051, 0.047); // #0D0D0C
+const vec3 VOIDC = vec3(0.008, 0.008, 0.008); // #020202
 const vec3 BONE  = vec3(0.918, 0.910, 0.882); // #EAE8E1
 
 float hash(vec2 p) {

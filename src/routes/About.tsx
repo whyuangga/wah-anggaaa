@@ -187,7 +187,7 @@ export default function About() {
             </p>
             <ul className="mt-5 space-y-2 font-mono text-[15px] tracking-[0.02em] text-bone/80">
               <li>type — general sans + ibm plex mono</li>
-              <li>color — #0d0d0c + #eae8e1</li>
+              <li>color — #020202 + #eae8e1</li>
               <li>built — react + three.js + gsap</li>
             </ul>
           </Reveal>

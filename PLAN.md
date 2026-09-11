@@ -14,7 +14,7 @@
 | Layout landing | Freeform collage ala kanvas Framer: elemen overlap/tabrak grid, full-bleed, tanpa kotak section, tetap scroll vertikal |
 | Motion | Immersive 3D: satu kanvas WebGL kontinu sebagai background + scroll-driven scenes |
 | Font (2 saja) | General Sans (Fontshare) + IBM Plex Mono (Google Fonts) |
-| Warna (2 saja) | Background `#0D0D0C`, teks `#EAE8E1` |
+| Warna (2 saja) | Background `#020202`, teks `#EAE8E1` |
 | Larangan | Tanpa pill, tanpa marquee — selamanya |
 | Foto & bulan | TIDAK ADA foto portrait, TIDAK ADA motif bulan di mana pun (aset bulan lama dibuang) |
 | Status | Bukan open-for-work — situs iseng-iseng. Label hero: `[ just for fun ]`, nada contact kasual ("say hi") |
@@ -85,7 +85,7 @@ Judul besar "say hi" + email placeholder + social links placeholder + info base/
 
 ## 7. Token desain
 
-- Warna: `--void: #0D0D0C`, `--bone: #EAE8E1`. Hierarki hanya via opacity: `100 / 70 / 45 / 25 / 12`.
+- Warna: `--void: #020202`, `--bone: #EAE8E1`. Hierarki hanya via opacity: `100 / 70 / 45 / 25 / 12`.
 - Font: `--sans: "General Sans"` (400/500/600), `--mono: "IBM Plex Mono"` (400/500).
 - Sudut: tajam/kecil (maksimal `rounded-xl` untuk media, tidak ada rounded-full).
 - Citra: grayscale permanen untuk semua thumbnail karya.

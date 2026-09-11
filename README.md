@@ -199,7 +199,7 @@ frame (EMA 120 frame) > 26ms, kualitas turun bertahap sampai lancar.
 
 ## Sistem Desain
 
-- **2 warna saja**: `--color-void: #0D0D0C` (bg) dan `--color-bone: #EAE8E1`
+- **2 warna saja**: `--color-void: #020202` (bg) dan `--color-bone: #EAE8E1`
   (teks). Hierarki hanya lewat opacity (100/70/45/25/12). Thumbnail works
   grayscale permanen (`.img-mono`); motif 3D abstrak monokrom.
 - **2 font saja**: General Sans (display/sans) + IBM Plex Mono (label/meta).

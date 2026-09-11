@@ -7,9 +7,9 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
  * Preloader: video kecil 112px di tengah + "( loading )" di paling bawah
- * + frame counter mono di kanan bawah. Selesai mengikuti video (6 dtk).
- * Saat selesai, background hilang duluan (0,7 dtk) — videonya menempel
- * di hero dan baru fade out belakangan, berbarengan konten hero muncul.
+ * + frame counter mono di kanan bawah. Selesai mengikuti video (6 dtk @2x = 3 dtk).
+ * Tanpa background: video mengambang di atas kanvas, lalu crossfade
+ * lambat (1,6 dtk) berbarengan konten hero muncul.
  */
 export default function Loader({ onDone }: { onDone: () => void }) {
   return (
@@ -48,7 +48,7 @@ function LoaderInner({ onDone }: { onDone: () => void }) {
       if (dur && Number.isFinite(dur) && dur > 0) {
         p = (video?.currentTime ?? 0) / dur;
       } else {
-        p = (performance.now() - startRef.current) / 6000;
+        p = (performance.now() - startRef.current) / 3000;
       }
       paint(p);
       if (!doneRef.current) rafRef.current = requestAnimationFrame(tick);
@@ -74,11 +74,13 @@ function LoaderInner({ onDone }: { onDone: () => void }) {
     rafRef.current = requestAnimationFrame(tick);
 
     // fallback: jangan jebak user bila video macet (durasi 6 dtk + buffer)
-    const fallback = setTimeout(finish, 7500);
+    const fallback = setTimeout(finish, 4500);
     const onEnded = () => finish();
     const onError = () => finish();
     video?.addEventListener('ended', onEnded);
     video?.addEventListener('error', onError);
+    // 2x: video 6 dtk selesai dalam 3 dtk
+    if (video) video.playbackRate = 2;
     // autoplay eksplisit (iOS butuh muted + playsInline — sudah diset di JSX)
     video?.play().catch(() => finish());
 
@@ -92,19 +94,13 @@ function LoaderInner({ onDone }: { onDone: () => void }) {
 
   return (
     <>
-      {/* latar: hilang duluan saat selesai */}
-      <motion.div
-        aria-hidden
-        className="absolute inset-0 bg-void"
-        exit={{ opacity: 0, transition: { duration: 0.7, ease: [...EASE] } }}
-      />
       {/* video 112px: menempel di hero, fade belakangan */}
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
           initial={{ opacity: 0, scale: 0.94 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.9, ease: [...EASE] }}
-          exit={{ opacity: 0, transition: { delay: 0.8, duration: 1.2, ease: [...EASE] } }}
+          exit={{ opacity: 0, transition: { delay: 0.6, duration: 1.6, ease: [...EASE] } }}
           className="h-28 w-28 overflow-hidden"
         >
           <video
