@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
 import Footer from '../components/Footer';
 import { CONTACT } from '../data/works';
-import { useJakartaTime } from '../hooks/useJakartaTime';
-import { useStudioStatus } from '../hooks/useStudioStatus';
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -85,9 +83,6 @@ function BrandGenerator() {
 }
 
 export default function Contact() {
-  const time = useJakartaTime();
-  const status = useStudioStatus();
-
   return (
     <>
       <section className="px-5 md:px-10 pt-32 md:pt-44 min-h-[80svh]">
@@ -137,10 +132,6 @@ export default function Contact() {
         <BrandGenerator />
 
         <div className="mt-12 flex flex-col md:flex-row justify-between gap-3 font-mono text-[11px] uppercase tracking-[0.18em] text-bone/50">
-          <p>jakarta, id — {time} wib</p>
-          <p>
-            studio: <span className="text-bone/80">[ {status} ]</span>
-          </p>
           <p>iseng-iseng welcome — no brief, no deadline, no drama</p>
         </div>
       </section>
