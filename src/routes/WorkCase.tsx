@@ -11,7 +11,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 function Meta({ children }: { children: ReactNode }) {
   return (
-    <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50">{children}</p>
+    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-bone">{children}</p>
   );
 }
 
@@ -169,7 +169,7 @@ export default function WorkCase() {
             {w.story.map((p, i) => (
               <Fragment key={i}>
                 <div className="grid md:grid-cols-12 gap-6">
-                  <p className="md:col-span-5 md:col-start-2 font-mono text-[11px] uppercase tracking-[0.18em] text-bone/40">
+                  <p className="md:col-span-5 md:col-start-2 font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-bone">
                     [ langkah {String(i + 1).padStart(2, '0')} ]
                   </p>
                   <Reveal delay={0.05}>

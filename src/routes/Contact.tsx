@@ -39,7 +39,7 @@ function BrandGenerator() {
 
   return (
     <div className="mt-16 md:mt-24 border-t border-bone/15 pt-10">
-      <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50">
+      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-bone">
         [ brand khayalan hari ini ]
       </p>
       <p className="mt-4 text-[15px] text-bone/60 max-w-[42ch] leading-relaxed">
@@ -88,7 +88,7 @@ export default function Contact() {
     <>
       <Seo title="kontak" path="/contact" />
       <section className="px-5 md:px-10 pt-32 md:pt-44 min-h-[80svh]">
-        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50">
+        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-bone">
           [ contact ]
         </p>
 
