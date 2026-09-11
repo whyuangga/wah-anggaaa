@@ -219,7 +219,7 @@ dan loader-nya.
 
 ```
 ├── PLAN.md                  → spesifikasi yang disetujui user (acuan kerja)
-├── vercel.json              → rewrite SPA /about /contact /works/* /journal*
+├── vercel.json              → rewrite SPA per-route + fallback /(.*) ke 404 nyasar
 ├── public/
 │   ├── _redirects           → (cadangan redirect SPA)
 │   ├── og.jpg               → preview share sosial 1200×630 (monokrom)
