@@ -69,7 +69,7 @@ export default function Journal() {
         </div>
       </section>
 
-      <Footer />
+      <Footer giant={false} />
     </>
   );
 }

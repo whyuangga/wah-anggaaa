@@ -271,7 +271,7 @@ export default function WorkCase() {
         </div>
       </section>
 
-      <Footer />
+      <Footer giant={false} />
     </>
   );
 }

@@ -8,7 +8,7 @@ import { TLink } from '../lib/transition';
 const EASE = [0.22, 1, 0.36, 1] as const;
 const WORD = 'wah:anggaaa'.split('');
 
-export default function Footer() {
+export default function Footer({ giant = true }: { giant?: boolean }) {
   const time = useJakartaTime();
   const status = useStudioStatus();
   const wordRef = useRef<HTMLSpanElement>(null);
@@ -40,7 +40,8 @@ export default function Footer() {
   };
 
   return (
-    <footer className="relative px-5 md:px-10 pt-20 md:pt-28 pb-6">
+    <footer className={`relative px-5 md:px-10 pb-6 ${giant ? 'pt-20 md:pt-28' : 'pt-10 md:pt-14'}`}>
+      {giant && (
       <TLink to="/" ariaLabel="Kembali ke index">
         <motion.span
           ref={wordRef}
@@ -76,8 +77,9 @@ export default function Footer() {
           ))}
         </motion.span>
       </TLink>
+      )}
 
-      <div className="rule h-px w-full mt-10 md:mt-14" />
+      <div className={`rule h-px w-full ${giant ? 'mt-10 md:mt-14' : ''}`} />
 
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-5 font-mono text-[11px] uppercase tracking-[0.16em] text-bone/50">
         <p>© 2026 wah:anggaaa</p>
