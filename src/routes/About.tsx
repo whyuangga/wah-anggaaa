@@ -13,7 +13,7 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 
 function Meta({ children }: { children: ReactNode }) {
   return (
-    <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/50">{children}</p>
+    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-bone/50">{children}</p>
   );
 }
 
