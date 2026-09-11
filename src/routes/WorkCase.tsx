@@ -2,7 +2,6 @@ import { motion } from 'motion/react';
 import { useParams } from 'react-router-dom';
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
-import Footer from '../components/Footer';
 import Seo from '../components/Seo';
 import { TLink } from '../lib/transition';
 import { WORKS } from '../data/works';
@@ -270,8 +269,6 @@ export default function WorkCase() {
           </TLink>
         </div>
       </section>
-
-      <Footer giant={false} />
     </>
   );
 }

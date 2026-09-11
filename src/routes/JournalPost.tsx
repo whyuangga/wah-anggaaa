@@ -70,7 +70,8 @@ export default function JournalPost() {
           dangerouslySetInnerHTML={{ __html: p.html }}
         />
 
-        {/* prev / next */}
+        {/* prev / next — hanya tampil kalau ada tetangga */}
+        {(prev || next) && (
         <div className="mt-20 md:mt-28 border-t border-bone/15 pt-8 pb-4 grid grid-cols-2 gap-6">
           <div>
             {prev && (
@@ -97,6 +98,7 @@ export default function JournalPost() {
             )}
           </div>
         </div>
+        )}
       </section>
 
       <Footer giant={false} rule={false} />
