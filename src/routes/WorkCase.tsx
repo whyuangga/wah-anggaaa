@@ -21,7 +21,7 @@ function Figure({ src, blur, alt, n }: { src: string; blur: string; alt: string;
         <img
           src={src}
           srcSet={srcSetOf(src)}
-          sizes="(min-width: 768px) 78vw, 100vw"
+          sizes="100vw"
           {...dimsOf(src)}
           alt={alt}
           loading="lazy"

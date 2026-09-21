@@ -6,9 +6,9 @@
  *
  *   - dimensi intrinsik tiap gambar → dipakai untuk atribut `width`/`height`
  *     pada <img> supaya ruangnya dipesan sejak awal (nol layout shift);
- *   - daftar varian ukuran yang benar-benar ada di disk (`-800.webp`, `-1200.webp`)
- *     → `srcSet` hanya menawarkan berkas yang memang ada, jadi gambar tidak
- *     pernah 404 hanya karena variannya belum dibuat.
+ *   - daftar kandidat `srcSet` berupa NAMA BERKAS LENGKAP yang sudah diverifikasi
+ *     ada di disk (`nama-800.webp` + berkas asli) → kode runtime tidak menyusun
+ *     nama berkas sendiri, dan gambar tidak mungkin gagal muat karena salah nama.
  *
  * Pembuatan variannya sendiri dilakukan di luar skrip ini (ImageMagick/PIL),
  * lihat bagian "Gambar" di README.
@@ -64,28 +64,47 @@ for (const file of files) {
   }
 
   const [w, h] = size;
-  const widths = TIERS.filter((t) => t < w && files.includes(`${file.replace(/\.webp$/, '')}-${t}.webp`));
-  entries[file] = { w, h, widths };
+  const stem = file.replace(/\.webp$/, '');
+
+  // Varian yang benar-benar ada di disk + berkas asli sebagai kandidat terbesar.
+  // Daftar ini ditulis lengkap ke data, sehingga kode runtime TIDAK PERNAH
+  // menyusun sendiri nama berkasnya (pernah salah dan gambarnya gagal senyap).
+  const sources = [
+    ...TIERS.filter((t) => t < w && files.includes(`${stem}-${t}.webp`)).map((t) => ({
+      file: `${stem}-${t}.webp`,
+      w: t,
+    })),
+    { file, w },
+  ].sort((a, b) => a.w - b.w);
+
+  // pastikan setiap kandidat benar-benar ada — gagal keras, bukan senyap
+  for (const s of sources) {
+    if (!files.includes(s.file)) throw new Error(`kandidat srcSet tak ada di disk: ${s.file}`);
+  }
+
+  entries[file] = { w, h, sources };
 
   // varian yang lebih besar dari sumbernya = pemborosan; laporkan
   for (const t of TIERS) {
-    const v = `${file.replace(/\.webp$/, '')}-${t}.webp`;
+    const v = `${stem}-${t}.webp`;
     if (files.includes(v) && t >= w) missing.push(`${v} (sumber hanya ${w}px)`);
   }
 }
 
-const lines = Object.entries(entries).map(
-  ([file, v]) => `  '${file}': { w: ${v.w}, h: ${v.h}, widths: [${v.widths.join(', ')}] },`,
-);
+const lines = Object.entries(entries).map(([file, v]) => {
+  const sources = v.sources.map((s) => `{ file: '${s.file}', w: ${s.w} }`).join(', ');
+  return `  '${file}': { w: ${v.w}, h: ${v.h}, sources: [${sources}] },`;
+});
 
 const ts = `/**
  * DIBUAT OTOMATIS oleh scripts/media.mjs — jangan disunting manual.
  * Jalankan \`npm run media\` setelah menambah/mengganti gambar.
  *
- * w/h        = dimensi intrinsik (untuk atribut width/height <img>)
- * widths     = lebar varian yang tersedia di disk (untuk srcSet)
+ * w/h     = dimensi intrinsik (untuk atribut width/height <img>)
+ * sources = kandidat srcSet, sudah terurut kecil→besar; nama berkasnya dijamin ada di disk
  */
-export const IMAGE_META: Record<string, { w: number; h: number; widths: number[] }> = {
+export type ImageSource = { file: string; w: number };
+export const IMAGE_META: Record<string, { w: number; h: number; sources: ImageSource[] }> = {
 ${lines.join('\n')}
 };
 `;
