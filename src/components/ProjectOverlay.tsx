@@ -401,10 +401,14 @@ export default function ProjectOverlay({
         </div>
       </header>
 
-      {/* isi halaman case — digulir sendiri */}
+      {/* isi halaman case — digulir sendiri.
+          data-lenis-prevent: Lenis yang sedang stop() mem-blok SEMUA wheel
+          (preventDefault di window) — atribut ini dinilai SEBELUM cek stopped,
+          jadi roda/jari di sini tetap menggulir wadah ini secara native. */}
       <div
         ref={scroller}
         className="karya-ov-scroll"
+        data-lenis-prevent
         style={{ visibility: kontenTersimpan ? 'hidden' : 'visible' }}
       >
         <div className="karya-ov-isi">

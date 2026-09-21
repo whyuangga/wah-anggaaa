@@ -59,12 +59,20 @@ export type PosisiKlik = {
  *   dan karya besar = slide yang tepinya paling dekat ke acuan
  *     vw/2 + lebarSel/2 − 5  (fungsi idx() di sumber).
  *
+ *   LOOP TAK BERUJUNG KE BAWAH: tampilan periodik per `max` (di t = max identik
+ *   dengan t = 0), jadi begitu posisi gulir melewati satu putaran, scrollY
+ *   dilipat kembali −max SEKETIKA — lompatannya tak terlihat karena framanya
+ *   sama persis. Ke bawah strip berputar selamanya; ke atas gulir tetap bisa
+ *   keluar seksi menuju hero (posisi tidak pernah dilipat di bawah 0).
+ *
  * Yang berbeda karena keadaan kita memang lain (lihat SPEC §2):
  *   • Halaman kita panjang, bukan setinggi satu layar. Seksi ini `sticky`
- *     setinggi `100vh + jarak satu putaran penuh`; gulir vertikal dipetakan 1:1
- *     ke geseran strip. Karena layout bersifat periodik (di t = max tampilannya
- *     identik dengan t = 0), satu jarak gulir penuh = satu putaran lengkap
- *     8 karya, lalu pin terlepas ke seksi berikutnya.
+ *     setinggi `100vh + 2× jarak satu putaran` (putaran kedua = headroom agar
+ *     batas lipatan bisa dilewati secara fisik); gulir vertikal dipetakan 1:1
+ *     ke geseran strip, dan karena layout periodik (di t = max tampilannya
+ *     identik dengan t = 0), scrollY yang melewati satu putaran dilipat −max
+ *     seketika → ke BAWAH loop tak berujung. Ke ATAS, gulir keluar seksi
+ *     menuju hero seperti biasa (raw tidak pernah dilipat di bawah 0).
  *   • Sel 20vw dan rasio 16:10 asli (foto tidak boleh di-crop, aturan ⑦).
  *   • Mobile & `prefers-reduced-motion`: wadah gulir horizontal asli.
  */
@@ -192,6 +200,17 @@ const wrap = (min: number, max: number, v: number) => {
   return ((v - min) % rentang + rentang) % rentang + min;
 };
 
+/** `mod(n, m)` — sisa pembagian yang selalu non-negatif (pelipatan posisi loop). */
+const mod = (n: number, m: number) => ((n % m) + m) % m;
+
+/** selisih terpendek dua posisi pada ruang periodik [0, m) — untuk lerp & snap. */
+const deltaPutaran = (a: number, b: number, m: number) => {
+  let d = a - b;
+  if (d > m / 2) d -= m;
+  if (d < -m / 2) d += m;
+  return d;
+};
+
 /**
  * PENJEPITAN — mesin inti, termasuk LOOPING.
  *
@@ -228,7 +247,7 @@ function usePenjepitan({
     const s = {
       cell: 0,
       max: 0, // lebar seluruh strip = jarak satu putaran penuh (px)
-      t: 0,
+      t: 0, // posisi target TERLIPAT di [0, max)
       tc: 0,
       prev: -1,
       lastChange: performance.now(),
@@ -236,8 +255,9 @@ function usePenjepitan({
       drag: false,
       downX: 0,
       downY: 0,
-      startY: 0,
+      startRaw: 0,
       gerak: 0,
+      snapSisa: 0,
       top: 0,
       raf: 0,
     };
@@ -253,8 +273,12 @@ function usePenjepitan({
       // jarak satu putaran = lebar seluruh strip (8 sel × 20vw = 160vw)
       s.max = Math.max(0, s.cell * WORKS.length);
       s.top = el.getBoundingClientRect().top + window.scrollY;
-      el.style.height = `${window.innerHeight + s.max}px`;
-      s.t = clamp(0, s.max, s.t);
+      // headroom SATU putaran ekstra: dokumen harus bisa melewati batas `max`
+      // secara fisik, kalau tidak roda/snap mengerem 1 px sebelum lipat dan
+      // loop mati. Lipatan −max tiap frame menjaga raw tetap di [0, max) —
+      // headroom-nya sendiri tak pernah terlihat.
+      el.style.height = `${window.innerHeight + s.max * 2}px`;
+      s.t = mod(s.t, s.max || 1);
       s.tc = s.t;
 
       /*
@@ -279,20 +303,55 @@ function usePenjepitan({
       pn.style.setProperty('--strip-atas', `${Math.max(0, Math.round(atas + tinggiCaption - PAD))}px`);
     };
 
+    /**
+     * Snap ke kelipatan sel (ruang terlipat; tujuan BOLEH = max). Kalau snap
+     * melewati batas putaran, sisa jaraknya disimpan di `snapSisa`: loop yang
+     * melipat scrollY (saat raw menyentuh max) sekaligus memulai animasi sisa
+     * itu — lipatan di tengah animasi Lenis akan mematikan animasinya, jadi
+     * lipatan dan lanjutan animasi harus terjadi di tempat yang sama.
+     */
+    const snapKe = (tujuan: number, now: number) => {
+      s.lastSnap = now;
+      if (tujuan <= s.max || s.max <= 0) {
+        scrollToY(s.top + Math.max(0, tujuan), { duration: 0.55 });
+        return;
+      }
+      s.snapSisa = tujuan - s.max;
+      // sasaran lewat 4 px dari max supaya lipatan pasti terlampaui; loop yang
+      // melipat sekaligus memulai animasi sisa (snapSisa).
+      const seg1 = s.max + 4 - s.t;
+      scrollToY(s.top + s.max + 4, {
+        duration: Math.max(0.15, 0.55 * (seg1 / (tujuan - s.t))),
+      });
+    };
+
     const loop = () => {
       s.raf = requestAnimationFrame(loop);
       if (jedaRef.current) return; // overlay terbuka — semua beku
 
       const vw = window.innerWidth;
 
-      // 1. posisi target dari posisi gulir (pemetaan 1:1, seperti aslinya)
-      s.t = clamp(0, s.max, window.scrollY - s.top);
+      // 1. posisi target dari posisi gulir (pemetaan 1:1, seperti aslinya),
+      //    DILIPAT ke [0, max): lewat satu putaran, scrollY dikembalikan −max
+      //    seketika — tak terlihat karena frame di t dan t−max identik.
+      let raw = window.scrollY - s.top;
+      if (raw >= s.max && s.max > 0) {
+        const sisa = s.snapSisa;
+        s.snapSisa = 0;
+        scrollToY(s.top + (raw - s.max), { immediate: true });
+        raw -= s.max;
+        if (sisa > 0.5) scrollToY(s.top + sisa, { duration: 0.25 });
+      }
+      const keluarAtas = raw < 0; // sedang digulir keluar menuju hero
+      s.t = keluarAtas ? 0 : raw;
 
-      // 2. posisi halus — lerp 0.1, sama seperti sumbernya
-      s.tc += (s.t - s.tc) * 0.1;
+      // 2. posisi halus — lerp 0.1 sama seperti sumbernya, tapi di ruang
+      //    periodik: selisih terpendek, supaya lipatan tidak memutar balik strip
+      const d = keluarAtas ? -s.tc : deltaPutaran(s.t, mod(s.tc, s.max), s.max);
+      s.tc += d * 0.1;
 
       // 3. SATU skalar untuk seluruh gerakan (ditulis di wrapper, seperti sumber)
-      tr.style.setProperty('--diff', String(clamp(0, 1, 1 - Math.abs(s.t - s.tc) * 0.001)));
+      tr.style.setProperty('--diff', String(clamp(0, 1, 1 - Math.abs(d) * 0.001)));
 
       // 4. LOOPING: transform per slide dari rumus wrap sumber.
       //    t_item = wrap(right - max, right, tc)  →  translate3d(-t_item, 0, 0)
@@ -336,18 +395,17 @@ function usePenjepitan({
         return wrap(kanan[i] - s.max, kanan[i], s.tc);
       }
 
-      // 6. diam 130 ms → snap ke kelipatan lebar sel (dijepit 0..max: satu putaran)
+      // 6. diam 130 ms → snap ke kelipatan lebar sel (di ruang periodik: snap
+      //    yang melewati batas putaran ikut melipat, bukan memutar balik)
       if (Math.abs(s.t - s.prev) > 0.4) {
         s.prev = s.t;
         s.lastChange = performance.now();
       }
       const now = performance.now();
-      if (!s.drag && now - s.lastChange > 130 && now - s.lastSnap > 420) {
-        const snap = clamp(0, s.max, Math.round(s.t / s.cell) * s.cell);
-        if (Math.abs(snap - s.t) > 1.2) {
-          s.lastSnap = now;
-          scrollToY(s.top + snap, { duration: 0.55 });
-        }
+      if (!s.drag && !keluarAtas && now - s.lastChange > 130 && now - s.lastSnap > 420) {
+        const snapW = Math.round(s.t / s.cell) * s.cell;
+        const dSnap = deltaPutaran(snapW, s.t, s.max);
+        if (Math.abs(dSnap) > 1.2) snapKe(s.t + dSnap, now);
       }
     };
 
@@ -358,7 +416,7 @@ function usePenjepitan({
       s.drag = true;
       s.downX = e.clientX;
       s.downY = e.clientY;
-      s.startY = window.scrollY;
+      s.startRaw = Math.max(0, window.scrollY - s.top);
       s.gerak = 0;
       pn.setPointerCapture(e.pointerId);
       pn.classList.add('is-drag');
@@ -368,8 +426,13 @@ function usePenjepitan({
       const dx = e.clientX - s.downX;
       s.gerak = Math.max(s.gerak, Math.hypot(dx, e.clientY - s.downY));
       if (s.gerak > 4) {
-        const tujuan = s.top + clamp(0, s.max, s.startY - s.top - dx);
-        scrollToY(tujuan, { immediate: true });
+        // geseran jari memutar strip; melewati batas putaran = mod (seamless),
+        // ke atas berhenti di 0 — keluar seksi lewat gulir biasa, bukan drag.
+        let r0 = s.startRaw - dx;
+        if (r0 >= s.max) r0 = mod(r0, s.max);
+        r0 = Math.max(0, r0);
+        s.snapSisa = 0;
+        scrollToY(s.top + r0, { immediate: true });
       }
     };
     const onUp = (e: PointerEvent) => {
@@ -406,9 +469,9 @@ function usePenjepitan({
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       e.preventDefault();
       const arah = e.key === 'ArrowRight' ? 1 : -1;
-      const tujuan = clamp(0, s.max, Math.round(s.t / s.cell) * s.cell + arah * s.cell);
-      s.lastSnap = performance.now();
-      scrollToY(s.top + tujuan, { duration: 0.55 });
+      const tujuan = Math.round(s.t / s.cell) * s.cell + arah * s.cell;
+      if (tujuan < 0) return; // panah kiri di sel pertama tetap di karya
+      snapKe(tujuan, performance.now());
     };
 
     ukur();

@@ -55,7 +55,7 @@ layar, roda & geseran ditangkap sebagai satu aliran `scroll(dy)` virtual.
 | Rasio sel | 4:5 portrait (foto di-crop) | **16:10 rasio asli** | aturan ⑦: foto tidak boleh di-crop |
 | Lebar sel | 100vw/7 | **100vw/5** | keputusanmu; 11 slide mereka vs 8 kita |
 | Strip | mulai x=0 | **bleed ke tepi** (keluar dari margin 40px) | aritmetika: dengan lebar sel 100vw/5, tepi layar jatuh tepat di tengah sel ke-2 → karya bisa duduk **persis** di tengah saat berhenti. Kalau strip dimulai dari margin, karya besarnya selalu meleset 40px dan sebaran tetangganya tak simetris |
-| Posisi gulir | dokumen 1 layar, `dy` virtual | seksi `sticky` setinggi `100vh + jarak tempuh`, gulir vertikal dipetakan **1:1** ke geseran strip | halaman kita panjang; rasionya tetap sama dengan aslinya |
+| Posisi gulir | dokumen 1 layar, `dy` virtual | seksi `sticky` setinggi `100vh + 2×max`; gulir vertikal dipetakan **1:1**, dan karena tampilan periodik, scrollY yang melewati satu putaran **dilipat −max** seketika → loop ke bawah tak berujung; ke atas keluar menuju hero | halaman kita panjang; headroom satu putaran menjamin batas lipat selalu bisa dilewati fisik |
 | Caption | di ATAS foto (`bottom-full`) | sama | mengikuti referensi |
 | Wordmark | 2 path SVG tangan, 3 typeface campur (termasuk italic) | **SVG, teks tunggal General Sans 700** | aturan ④⑤; lihat §5 |
 | Bar bawah | `Carousel, List` + `London, UK HH:MM` | `Karya` + `Jakarta, ID HH:MM` | label mode menyusul bareng mode List |
@@ -115,4 +115,20 @@ slot hero, `lib/flip.ts`), judul per huruf, baris meta, pernyataan, galeri rasio
 dan blok [Next project] yang menerbangkan foto preview. Klik ditangkap di `onUp`
 carousel (gerak < 6 px = klik, bukan geser); `data-slug` di tiap `<article>` jadi kunci.
 Mesin carousel dijeda lewat prop `jeda` selama overlay terbuka. Verifikasi lengkap:
-`tools/verify-overlay.mjs` (31 cek — desktop · mobile · reduced-motion).
+`tools/verify-overlay.mjs` (32 cek — desktop · mobile · reduced-motion).
+
+## 9. Jebakan yang sudah pernah kena (loop & overlay)
+
+1. **Lenis `stop()` mem-blok SEMUA wheel** (`preventDefault` di window saat stopped) —
+   isi overlay tidak bisa digulir roda. Solusi: atribut `data-lenis-prevent` pada
+   `.karya-ov-scroll`; Lenis menilai atribut itu SEBELUM cek stopped.
+2. **Animasi Lenis berkelahi dengan lompatan native/`immediate`** yang dikeluarkan
+   saat animasinya masih hidup. Maka semua perpindahan scroll carousel lewat
+   `scrollToY` (Lenis), dan lipatan loop memakai `immediate` yang memang menghentikan
+   animasi — lalu animasi sisa (`snapSisa`) dimulai SETELAH lipat, di frame yang sama.
+3. **Tanpa headroom, loop mati 1 px sebelum batas**: tinggi seksi harus
+   `100vh + 2×max`, bukan `+ max`, supaya roda/snap bisa melewati `max` secara fisik
+   dan lipatan pasti terpicu. Snap yang melintasi batas dianimasikan sampai `max + 4`,
+   dilipat, lalu sisanya dilanjutkan — tidak pernah ada target animasi persis di `max`.
+4. Lerp `tc` dan snap dihitung di **ruang periodik** (selisih terpendek `deltaPutaran`),
+   kalau tidak lipatan membuat strip berputar balik satu putaran penuh.

@@ -53,9 +53,20 @@ export function startScroll() {
  * (b) saat strip digeser dengan tetikus/jari — di situ `immediate` dipakai
  * supaya gerakan jari tidak dilawan animasi Lenis.
  */
-export function scrollToY(y: number, opsi?: { duration?: number; immediate?: boolean }) {
-  if (lenis) lenis.scrollTo(y, { duration: opsi?.duration, immediate: opsi?.immediate });
-  else window.scrollTo({ top: y, behavior: opsi?.immediate ? 'auto' : 'smooth' });
+export function scrollToY(
+  y: number,
+  opsi?: { duration?: number; immediate?: boolean; onComplete?: () => void },
+) {
+  if (lenis)
+    lenis.scrollTo(y, {
+      duration: opsi?.duration,
+      immediate: opsi?.immediate,
+      onComplete: opsi?.onComplete,
+    });
+  else {
+    window.scrollTo({ top: y, behavior: opsi?.immediate ? 'auto' : 'smooth' });
+    opsi?.onComplete?.();
+  }
 }
 
 /** Naik ke paling atas. Dipakai saat nanti pindah halaman. */
