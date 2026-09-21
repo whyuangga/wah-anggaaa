@@ -265,7 +265,8 @@ dan loader-nya.
 
 scripts/
 ├── sitemap.mjs               → prebuild: sitemap dari slug works.ts + berkas jurnal
-├── media.mjs                 → prebuild: dimensi & varian gambar → src/data/image-dims.ts
+├── media.mjs                 → prebuild: dimensi & kandidat srcSet → src/data/image-dims.ts
+├── check-images.mjs          → opsional: uji regresi gambar DPR 1/2/3 (butuh playwright-core)
 └── subset-fonts.sh           → manual: subset font ke Latin-1 (butuh fonttools)
 ```
 
@@ -282,7 +283,15 @@ npm install
 npm run dev      # http://localhost:3000/wah-anggaaa/ (dev menghormati base)
 npm run lint     # tsc --noEmit
 npm run build    # vite build + salin dist/index.html → dist/404.html (fallback SPA)
+
+# uji regresi gambar (opsional — butuh playwright-core + chromium)
+npm i -D playwright-core && npx playwright-core install chromium
+VERCEL=1 npm run build && npx vite preview --port 4000 &
+node scripts/check-images.mjs --origin http://localhost:4000
 ```
+
+> Build untuk pratinjau lokal di root **harus** `VERCEL=1`, karena `base` tanpa env
+> itu jadi `/wah-anggaaa/` dan preview di root tak memuat apa pun.
 
 > Dev server me-redirect `/` → `/wah-anggaaa/` karena `base` Vite — itu normal.
 
@@ -330,14 +339,29 @@ Yang membuatnya turun:
 - **Font di-subset ke Latin-1 + tanda baca yang dipakai:** 96 → 67 kB, dan
   `general-sans-500` di-preload (plugin Vite) supaya tagline LCP tidak menunggu
   CSS selesai diparse.
-- **Gambar responsif + dimensi intrinsik:** varian `-800.webp` dipilih browser
-  lewat `srcSet`/`sizes` (terverifikasi: 7 dari 11 sel di mobile memakai varian
-  800px), dan `width`/`height` dari `scripts/media.mjs` memesan ruang lebih dulu
-  → CLS halaman case study turun dari 0,11 ke 0,0001.
+- **Gambar responsif + dimensi intrinsik:** varian `-800.webp` ditawarkan lewat
+  `srcSet`/`sizes`; browser memilih sesuai kepadatan layar — terukur di produksi:
+  desktop DPR 1 dan phone DPR 2 memakai varian 800px untuk semua gambar yang
+  punya varian, sedangkan phone DPR 3 serta hero/galeri case study
+  (`sizes="100vw"`) memakai berkas asli, jadi ketajaman maksimum tetap terjaga.
+  `width`/`height` dari `scripts/media.mjs` memesan ruang lebih dulu → CLS
+  halaman case study turun dari 0,11 ke 0,0001.
 - **`manualChunks`** memisahkan vendor (react/motion/router) supaya cache tidak
   batal tiap rilis dan unduhan berjalan paralel.
 - Scrub manifesto, counter loader, dan drift About memakai mutasi DOM langsung —
   tanpa state React.
+
+**Penjaga regresi gambar.** `scripts/check-images.mjs` memverifikasi tiga hal di
+DPR 1, 2, dan 3 (jumlah piksel perangkat menentukan kandidat mana yang dipilih
+browser — bug 21 Sep 2026 hanya muncul di DPR 2): setiap `<img>` benar-benar
+ter-decode, setiap kandidat `srcSet` yang ditawarkan halaman benar-benar ada dan
+bertipe `image/*`, dan halaman yang seharusnya bergambar tidak boleh kosong.
+Jalankan setelah build: `node scripts/check-images.mjs --origin http://localhost:4000`.
+
+> Jangan pernah percaya "tidak ada 404" sebagai bukti gambar termuat: rewrite SPA
+> Vercel membalas **200 + text/html** untuk path gambar apa pun yang tidak ada,
+> jadi gambar yang salah nama gagal secara senyap — yang terlihat hanya
+> placeholder blur gelap.
 
 **Sisa yang masih terbuka** (belum dikerjakan, urut potensi):
 
@@ -371,12 +395,42 @@ Yang membuatnya turun:
 | Warna / font    | `src/index.css` (`@theme`) |
 | Tambah/ganti gambar karya | taruh webp di `public/images/works/`, buat varian `-800.webp`, jalankan `npm run media` |
 | Regenerasi subset font | `./scripts/subset-fonts.sh` (butuh `pip install fonttools brotli`) |
+| Uji gambar sebelum rilis | `node scripts/check-images.mjs --origin <url>` (DPR 1/2/3) |
 | Encode ulang video loader | `ffmpeg -i in.mp4 -vf "crop=min(iw\,ih):min(iw\,ih),scale=240:240:flags=area" -c:v libx264 -crf 34 -preset slow -pix_fmt yuv420p -an -movflags +faststart out.mp4` |
 | Copy about      | `src/routes/About.tsx` |
 
 ---
 
 ## Riwayat Refactor
+
+### Perbaikan — thumbnail works gagal muat di layar retina (21 Sep 2026)
+
+Bug yang kumasukkan di Phase 2: kandidat "ukuran penuh" pada `srcSet` disusun dengan
+menempelkan lebar asli ke nama berkas (`003-elan-896.webp`) padahal berkas aslinya
+`003-elan.webp` — berkas berakhiran lebar itu tidak pernah ada. Di Vercel
+kegagalannya senyap: rewrite SPA membalas 200 + HTML untuk permintaan gambar, jadi
+tidak ada 404 dan gambar hanya tidak ter-decode.
+
+Dampak: pada layar retina (DPR 2) browser memilih kandidat terbesar itu → **4 dari
+11 thumbnail beranda hilang** (ÉLAN, CHERIEL, Aethelgard, GLINT) plus gambar hero
+dan galeri di halaman case study. Di DPR 1 dan mobile tidak terlihat karena browser
+memilih varian `-800` yang memang ada — itu sebabnya verifikasi Phase 2 lolos.
+
+Perbaikan (sekaligus menutup kelas bug-nya):
+
+- `scripts/media.mjs` menulis daftar kandidat `srcSet` **eksplisit** ke
+  `src/data/image-dims.ts` (`sources: [{ file, w }]`, berisi nama berkas yang sudah
+  diverifikasi ada di disk) dan **gagal keras** saat kandidat tak ditemukan.
+- `src/lib/img.ts` tidak lagi menyusun nama berkas — hanya menyatukan kandidat dari
+  data dengan awalan path dari URL aslinya.
+- `sizes` galeri case study `78vw` → `100vw` (bagiannya full-width, jadi `78vw`
+  membuat browser memilih varian lebih kecil dari yang seharusnya).
+- `scripts/check-images.mjs` ditambahkan sebagai penjaga regresi (DPR 1/2/3).
+
+Verifikasi: produksi 11/11 thumbnail termuat di DPR 2 (sebelumnya 7/11), seluruh
+kandidat `srcSet` valid, dan perbandingan retina terhadap commit `686de83` (sebelum
+semua refactor) menghasilkan RMSE 0,0099 pada area kolase — beda sub-piksel dari
+resampling, tak terlihat mata.
 
 ### Phase 2 — kejar performa (21 Sep 2026)
 
