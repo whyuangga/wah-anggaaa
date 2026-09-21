@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'motion/react';
 import { EASE } from './ui';
+import { dimsOf, srcSetOf } from '../lib/img';
 import { useGo } from '../lib/transition';
 import type { Work } from '../data/works';
 
@@ -120,7 +121,11 @@ export default function WorksFocusOverlay({ work, total, onClose, onPrev, onNext
             />
             <img
               src={work.thumb}
+              srcSet={srcSetOf(work.thumb)}
+              sizes="(min-width: 768px) 90vw, 100vw"
+              {...dimsOf(work.thumb)}
               alt={work.title}
+              decoding="async"
               onLoad={(e) => {
                 e.currentTarget.style.opacity = '1';
               }}

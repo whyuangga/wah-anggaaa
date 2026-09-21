@@ -6,6 +6,7 @@ import { TLink } from '../lib/transition';
 import { WORKS } from '../data/works';
 import NotFound from './NotFound';
 import { EASE, Meta, Reveal } from '../components/ui';
+import { dimsOf, srcSetOf } from '../lib/img';
 
 /** satu gambar galeri dengan blur placeholder */
 function Figure({ src, blur, alt, n }: { src: string; blur: string; alt: string; n: number }) {
@@ -19,8 +20,12 @@ function Figure({ src, blur, alt, n }: { src: string; blur: string; alt: string;
         />
         <img
           src={src}
+          srcSet={srcSetOf(src)}
+          sizes="(min-width: 768px) 78vw, 100vw"
+          {...dimsOf(src)}
           alt={alt}
           loading="lazy"
+          decoding="async"
           onLoad={(e) => {
             e.currentTarget.style.opacity = '1';
           }}
@@ -87,7 +92,11 @@ export default function WorkCase() {
           />
           <img
             src={w.thumb}
+            srcSet={srcSetOf(w.thumb)}
+            sizes="100vw"
+            {...dimsOf(w.thumb)}
             alt={w.title}
+            fetchPriority="high"
             onLoad={(e) => {
               e.currentTarget.style.opacity = '1';
             }}

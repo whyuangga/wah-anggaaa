@@ -1,6 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useLayoutEffect, useMemo, useRef } from 'react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';
 import Footer from '../components/Footer';
@@ -8,7 +6,6 @@ import Seo from '../components/Seo';
 import { TLink } from '../lib/transition';
 import { EASE, Meta, Reveal } from '../components/ui';
 
-gsap.registerPlugin(ScrollTrigger);
 
 /**
  * Dua baris raksasa konvergen dari sisi berlawanan mengikuti scroll —
@@ -27,28 +24,47 @@ function DriftLines({
   const aRef = useRef<HTMLSpanElement>(null);
   const bRef = useRef<HTMLSpanElement>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    const wrap = ref.current;
+    const a = aRef.current;
+    const b = bRef.current;
+    if (!wrap || !a || !b) return;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    if (!ref.current || !aRef.current || !bRef.current) return;
-    const mm = gsap.matchMedia();
-    const drift = (amt: string) => {
-      gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: ref.current,
-            start: 'top bottom',
-            end: 'top 30%',
-            scrub: 1,
-          },
-        })
-        .fromTo(aRef.current, { x: `-${amt}` }, { x: '0%', ease: 'none' }, 0)
-        .fromTo(bRef.current, { x: amt }, { x: '0%', ease: 'none' }, 0);
+
+    // Pengganti timeline GSAP + scrub:1 tanpa dependency — ukur posisi live
+    // tiap frame (kebal toolbar Chrome yang mengubah tinggi viewport saat
+    // scroll), lalu redam progresnya (~0,35 dtk) supaya terasa sama "karet".
+    // Rentang sama seperti dulu: mulai saat atas elemen menyentuh dasar
+    // viewport, selesai saat menyentuh 30% tinggi viewport.
+    const amount = () => (window.innerWidth >= 768 ? 35 : 12);
+
+    // Offset awal dipasang SEBELUM cat pertama (layout effect) supaya garis
+    // tidak sempat tampil di posisi tengah lalu melompat — nol pergeseran.
+    a.style.transform = `translate3d(${-amount()}%,0,0)`;
+    b.style.transform = `translate3d(${amount()}%,0,0)`;
+
+    let raf = 0;
+    let last = performance.now();
+    let smooth = 0;
+
+    const update = (now: number) => {
+      raf = requestAnimationFrame(update);
+      const dt = Math.min(0.05, Math.max(0.001, (now - last) / 1000));
+      last = now;
+
+      const vh = window.innerHeight;
+      if (!vh) return;
+      const top = wrap.getBoundingClientRect().top;
+      const target = Math.min(1, Math.max(0, (vh - top) / (vh * 0.7)));
+      smooth += (target - smooth) * (1 - Math.exp(-dt / 0.35));
+
+      const amt = amount();
+      a.style.transform = `translate3d(${(-amt * (1 - smooth)).toFixed(2)}%,0,0)`;
+      b.style.transform = `translate3d(${(amt * (1 - smooth)).toFixed(2)}%,0,0)`;
     };
-    mm.add('(min-width: 768px)', () => drift('35%'));
-    mm.add('(max-width: 767px)', () => drift('12%'));
-    return () => {
-      mm.revert();
-    };
+
+    raf = requestAnimationFrame(update);
+    return () => cancelAnimationFrame(raf);
   }, []);
 
   return (
@@ -168,7 +184,7 @@ export default function About() {
             <ul className="mt-4 space-y-0 font-mono text-[15px] leading-[1.2] tracking-[-0.6px] text-bone">
               <li>type — general sans + ibm plex mono</li>
               <li>color — #020202 + #eae8e1</li>
-              <li>built — react + three.js + gsap</li>
+              <li>built — react + motion</li>
             </ul>
           </Reveal>
         </div>

@@ -1,16 +1,11 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'motion/react';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import Lenis from 'lenis';
+import type Lenis from 'lenis';
 import Nav from './components/Nav';
 import Loader from './components/Loader';
 import Cursor from './components/Cursor';
 import { TransitionProvider } from './lib/transition';
-import { Analytics } from '@vercel/analytics/react';
-
-gsap.registerPlugin(ScrollTrigger);
 
 const Home = lazy(() => import('./routes/Home'));
 const About = lazy(() => import('./routes/About'));
@@ -20,14 +15,35 @@ const NotFound = lazy(() => import('./routes/NotFound'));
 const Journal = lazy(() => import('./routes/Journal'));
 const JournalPost = lazy(() => import('./routes/JournalPost'));
 
-/** Scroll ke atas + hitung ulang posisi trigger setiap ganti route. */
+/** Scroll ke atas setiap ganti route. */
 function RouteSync({ scrollTop }: { scrollTop: () => void }) {
   const { pathname } = useLocation();
   useEffect(() => {
     scrollTop();
-    const id = requestAnimationFrame(() => ScrollTrigger.refresh());
-    return () => cancelAnimationFrame(id);
   }, [pathname, scrollTop]);
+  return null;
+}
+
+/** Analytics hanya di produksi, dan hanya setelah browser menganggur. */
+function DeferredAnalytics() {
+  useEffect(() => {
+    if (!import.meta.env.PROD) return;
+    let cancelled = false;
+    const start = () => {
+      if (cancelled) return;
+      import('@vercel/analytics')
+        .then((m) => m.inject())
+        .catch(() => {});
+    };
+    const idleId = window.requestIdleCallback
+      ? window.requestIdleCallback(start, { timeout: 3000 })
+      : window.setTimeout(start, 1500);
+    return () => {
+      cancelled = true;
+      if (window.cancelIdleCallback) window.cancelIdleCallback(idleId);
+      else clearTimeout(idleId);
+    };
+  }, []);
   return null;
 }
 
@@ -47,37 +63,50 @@ function Shell() {
     else window.scrollTo(0, 0);
   }, []);
 
-  // Lenis digerakkan oleh GSAP ticker (pola resmi Lenis + ScrollTrigger)
+  /**
+   * Smooth scroll. Lenis diimpor dinamis: ±10 kB gzip yang dulu ikut menahan
+   * paint pertama kini menyusul setelah konten tampil. Selama belum siap,
+   * scroll tetap pakai native — jadi tidak ada momen scroll "mati".
+   */
   useEffect(() => {
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const lenis = new Lenis({
-      duration: 1.15,
-      smoothWheel: !reduced,
-      syncTouch: false,
-    });
-    lenisRef.current = lenis;
+    let disposed = false;
+    let teardown: (() => void) | undefined;
 
-    lenis.on('scroll', () => {
-      ScrollTrigger.update();
-    });
+    import('lenis')
+      .then(({ default: Lenis }) => {
+        if (disposed) return;
+        const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const lenis = new Lenis({
+          duration: 1.15,
+          smoothWheel: !reduced,
+          syncTouch: false,
+        });
+        lenisRef.current = lenis;
 
-    const tick = (time: number) => lenis.raf(time * 1000);
-    gsap.ticker.add(tick);
-    gsap.ticker.lagSmoothing(0);
+        // digerakkan loop rAF sendiri — dulu lewat GSAP ticker, sekarang tidak
+        // perlu pustaka tambahan hanya untuk memanggil lenis.raf tiap frame
+        let raf = 0;
+        const tick = (time: number) => {
+          lenis.raf(time);
+          raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
 
-    const onLoad = () => ScrollTrigger.refresh();
-    window.addEventListener('load', onLoad);
-    if (document.fonts) document.fonts.ready.then(onLoad).catch(() => {});
+        teardown = () => {
+          cancelAnimationFrame(raf);
+          lenis.destroy();
+          lenisRef.current = null;
+        };
+      })
+      .catch(() => {});
 
     return () => {
-      window.removeEventListener('load', onLoad);
-      gsap.ticker.remove(tick);
-      lenis.destroy();
-      lenisRef.current = null;
+      disposed = true;
+      teardown?.();
     };
   }, []);
 
-  // kunci scroll selama intro
+  // kunci scroll selama intro (Lenis belum tentu sudah siap — body cukup)
   useEffect(() => {
     if (entered) {
       lenisRef.current?.start();
@@ -130,7 +159,7 @@ function Shell() {
           </div>
         </div>
       </div>
-      <Analytics />
+      <DeferredAnalytics />
     </TransitionProvider>
   );
 }

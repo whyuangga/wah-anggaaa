@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import WorksFocusOverlay from '../components/WorksFocusOverlay';
 import { EASE, Meta } from '../components/ui';
+import { dimsOf, srcSetOf } from '../lib/img';
 import { WORKS } from '../data/works';
 
 /** rasio gambar kolase bergilir (desktop) */
@@ -53,23 +53,25 @@ export default function HomeWorks() {
     window.dispatchEvent(new CustomEvent('works-overlay', { detail: { open: open !== null } }));
   }, [open]);
 
-  // scroll-spy khusus sentuh: spotlight mengikuti gambar yang terlihat
+  // scroll-spy khusus sentuh: spotlight mengikuti gambar yang terlihat.
+  // Dulu 11 ScrollTrigger; sekarang satu IntersectionObserver dengan pita
+  // sempit di tengah viewport — nol dependency, dan otomatis berhenti
+  // menghitung saat sel sudah tidak terlihat.
   useEffect(() => {
     if (!window.matchMedia('(pointer: coarse)').matches) return;
-    const triggers = cellRefs.current.map((el, i) => {
-      if (!el) return null;
-      return ScrollTrigger.create({
-        trigger: el,
-        start: 'top 55%',
-        end: 'bottom 45%',
-        onToggle: (self) => {
-          if (self.isActive) setFocus(i);
-        },
-      });
-    });
-    return () => {
-      triggers.forEach((t) => t?.kill());
-    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const i = cellRefs.current.indexOf(entry.target as HTMLDivElement);
+          if (i >= 0) setFocus(i);
+        }
+      },
+      // pita 55%→60% tinggi viewport (setara start 'top 55%' / end 'bottom 45%')
+      { rootMargin: '-55% 0px -40% 0px', threshold: 0 },
+    );
+    cellRefs.current.forEach((el) => el && io.observe(el));
+    return () => io.disconnect();
   }, [shuffled]);
 
   return (
@@ -173,6 +175,9 @@ export default function HomeWorks() {
                       />
                       <img
                         src={w.thumb}
+                        srcSet={srcSetOf(w.thumb)}
+                        sizes="(min-width: 1024px) 30vw, (min-width: 768px) 45vw, 100vw"
+                        {...dimsOf(w.thumb)}
                         alt={w.title}
                         loading="lazy"
                         decoding="async"

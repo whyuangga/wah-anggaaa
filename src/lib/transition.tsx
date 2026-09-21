@@ -9,10 +9,8 @@ import {
   type RefObject,
 } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+import { animate } from 'motion/react';
+import { EASE } from '../components/ui';
 
 type GoFn = (to: string) => void;
 const GoContext = createContext<GoFn>(() => {});
@@ -26,6 +24,8 @@ export function isActivePath(to: string, pathname: string): boolean {
   return false;
 }
 
+const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
+
 type ProviderProps = {
   children: ReactNode;
   /** wrapper konten route — SATU-SATUNYA elemen yang di-transform saat transisi */
@@ -35,8 +35,8 @@ type ProviderProps = {
 
 /**
  * Transisi halaman: konten lama fade-out naik → `navigate()` → konten baru
- * fade-in turun. Sejak kanvas WebGL dihapus, transisi ini murni DOM — tidak ada
- * lagi tween uniform shader per perpindahan route.
+ * fade-in turun. Digerakkan `animate()` dari Motion (sudah ada di bundle untuk
+ * seluruh UI), jadi tidak ada pustaka animasi kedua yang perlu diunduh.
  *
  * Penting: `contentRef` tidak boleh memuat elemen `position: fixed`
  * (transform di elemen ini jadi containing block bagi mereka).
@@ -57,35 +57,39 @@ export function TransitionProvider({ children, contentRef, scrollTop }: Provider
       const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       const el = contentRef.current;
 
-      const tl = gsap.timeline({
-        onComplete: () => {
+      const run = async () => {
+        try {
+          if (el) {
+            await animate(
+              el,
+              reduced ? { opacity: 0 } : { opacity: 0, y: -24 },
+              { duration: reduced ? 0.15 : 0.32, ease: 'easeIn' },
+            ).finished;
+          }
+
+          navigate(to);
+          scrollTop();
+          await nextFrame(); // biar konten baru sempat ter-commit sebelum fade-in
+
+          if (el) {
+            await animate(
+              el,
+              reduced ? { opacity: [0, 1] } : { opacity: [0, 1], y: [24, 0] },
+              { duration: reduced ? 0.25 : 0.7, ease: [...EASE] },
+            ).finished;
+          }
+        } finally {
+          // bersihkan inline style: sisa transform mengubah containing block
+          // dan merusak elemen fixed di dalam konten
+          if (el) {
+            el.style.removeProperty('opacity');
+            el.style.removeProperty('transform');
+          }
           busyRef.current = false;
-          if (el) gsap.set(el, { clearProps: 'opacity,transform' });
-        },
-      });
+        }
+      };
 
-      if (reduced) {
-        if (el) tl.to(el, { opacity: 0, duration: 0.15 }, 0);
-      } else if (el) {
-        tl.to(el, { opacity: 0, y: -24, duration: 0.32, ease: 'power2.in' }, 0);
-      }
-
-      tl.add(() => {
-        navigate(to);
-        scrollTop();
-        requestAnimationFrame(() => ScrollTrigger.refresh());
-      });
-
-      if (reduced) {
-        if (el) tl.to(el, { opacity: 1, duration: 0.25 }, '+=0.02');
-      } else if (el) {
-        tl.fromTo(
-          el,
-          { opacity: 0, y: 24 },
-          { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
-          '+=0.02',
-        );
-      }
+      void run();
     },
     [location.pathname, navigate, scrollTop, contentRef],
   );
@@ -96,16 +100,12 @@ export function TransitionProvider({ children, contentRef, scrollTop }: Provider
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const el = contentRef.current;
     if (!el) return;
-    gsap.fromTo(
-      el,
-      { opacity: 0.2 },
-      {
-        opacity: 1,
-        duration: 0.45,
-        ease: 'power2.out',
-        onComplete: () => gsap.set(el, { clearProps: 'opacity' }),
-      },
-    );
+    const controls = animate(el, { opacity: [0.2, 1] }, { duration: 0.45, ease: 'easeOut' });
+    controls.finished
+      .then(() => {
+        if (!busyRef.current) el.style.removeProperty('opacity');
+      })
+      .catch(() => {});
   }, [location.pathname, contentRef]);
 
   return <GoContext.Provider value={go}>{children}</GoContext.Provider>;

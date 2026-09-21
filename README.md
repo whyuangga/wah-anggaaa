@@ -86,9 +86,9 @@ crawler tidak lagi menunggu intro.
 | Styling              | **Tailwind CSS v4** (via `@tailwindcss/vite`, token di `@theme`)       |
 | Latar belakang       | **CSS murni** — void polos `#020202` (kanvas WebGL dihapus di refactor Phase 1) |
 | Routing              | **React Router DOM v7** (basename adaptif mengikuti `BASE_URL`)        |
-| Smooth scroll        | **Lenis 1.3**                                                          |
-| Animasi scroll/keyframe | **GSAP 3.15** + **ScrollTrigger**                                   |
-| Animasi komponen     | **Motion 12** (`motion/react`: AnimatePresence, whileInView)           |
+| Smooth scroll        | **Lenis 1.3** — diimpor dinamis, menyusul setelah paint pertama         |
+| Animasi              | **Motion 12** (`motion/react`: AnimatePresence, whileInView, `animate()`) |
+| Scroll-driven        | **rAF manual + IntersectionObserver** — nol pustaka tambahan            |
 | Font                 | Self-hosted **woff2**: General Sans (400/500/600) + IBM Plex Mono (400/500) |
 | Deploy               | GitHub Pages (Actions build) + Vercel (root) — satu codebase           |
 
@@ -108,41 +108,42 @@ dengan fallback `prefers-reduced-motion`.
 
 - Satu instance Lenis global menghaluskan scroll roda mouse; di perangkat
   sentuh dibuat ringan agar scroll native tetap jujur.
-- Digerakkan GSAP ticker (`lenis.raf` + `lagSmoothing(0)`); tiap event scroll
-  memanggil `ScrollTrigger.update()`.
+- Digerakkan loop `requestAnimationFrame` sendiri (`lenis.raf(time)` tiap frame).
+- Diimpor dinamis: selama belum siap, scroll memakai native — tidak ada momen
+  scroll "mati", dan ±10 kB gzip-nya tidak menahan paint pertama.
 - Scroll dikunci (`lenis.stop()` → kelas `.lenis-stopped`) saat focus overlay
   works dibuka, lewat CustomEvent `works-overlay` yang didengar App.
 
-### 2. GSAP ScrollTrigger — scrub kata & scroll-spy
+### 2. Scroll-driven tanpa pustaka
 
-- **Manifesto scrub** (`ManifestoScrub`): loop rAF mengukur posisi paragraf
-  **live tiap frame** (`getBoundingClientRect`) lalu memetakan ke opacity
-  tiap kata via mutasi `style` langsung (tanpa state React → 60fps).
-  Pengukuran live dipilih karena trigger persenan yang dihitung sekali
-  terbukti rapuh di mobile (toolbar Chrome mengubah tinggi viewport saat
-  scroll → tiang gawang bergeser). Rentang atas-paragraf `90% → 60%` layar
-  selalu reachable (butuh konten bawah ≥40% viewport).
-- **Scroll-spy works (mobile)**: 11 ScrollTrigger `onToggle` (khusus
-  `pointer: coarse`) menggerakkan state `focus` yang sama dengan hover
-  desktop — spotlight mengikuti gambar yang sedang terlihat.
-- **Drift horizontal About** (meniru Inspirux): hero masuk dengan dua baris
-  konvergen dari sisi berlawanan (`x: ±14% → 0`, Motion); teks recognition
-  memakai mesin scrub GSAP (`x: ±35% → 0` desktop, ±12% mobile); tiap baris
-  capabilities meluncur `x: 35% → 0` dengan scrub per baris
-  (`start: 'top 90%'`, `end: 'bottom +=70%'`).
+Tiga animasi yang dulu memakai GSAP + ScrollTrigger sekarang berdiri sendiri —
+masing-masing mengukur posisi **live tiap frame** atau memakai observer, sehingga
+kebal toolbar mobile yang mengubah tinggi viewport saat scroll:
 
-### 3. GSAP timeline — transisi halaman (DOM)
+- **Manifesto scrub** (`HomeManifesto.tsx`): loop rAF memetakan posisi paragraf
+  ke opacity tiap kata via mutasi `style` langsung (tanpa state React).
+  Rentang atas-paragraf `90% → 60%` layar.
+- **Scroll-spy works (mobile)** (`HomeWorks.tsx`): satu `IntersectionObserver`
+  dengan pita sempit di tengah viewport (`rootMargin: '-55% 0px -40% 0px'`) →
+  spotlight mengikuti gambar yang sedang terlihat. Dulu 11 ScrollTrigger.
+- **Drift horizontal About** (`About.tsx`): mesin scrub GSAP ditiru di rAF — dua
+  baris konvergen `x: ±35% → 0` (desktop) / `±12%` (mobile), dengan peredaman
+  ~0,35 dtk supaya terasa sama "karet" seperti `scrub: 1`. Offset awal dipasang
+  di `useLayoutEffect` supaya tidak ada pergeseran layout.
+
+### 3. Transisi halaman (Motion)
 
 `TransitionProvider` (`src/lib/transition.tsx`) mencegat navigasi via komponen
-`TLink`: konten lama fade-out naik 24px (0,32 dtk) → `navigate()` + scroll ke
-atas + refresh ScrollTrigger → konten baru fade-in turun (0,7 dtk). Tombol
-back/forward browser mendapat fade cepat 0,45 dtk. Guard `busyRef` mencegah
-navigasi ganda; klik link halaman aktif = scroll ke atas.
+`TLink` dan menggerakkannya dengan `animate()` dari Motion — pustaka yang sudah
+ada untuk seluruh UI, jadi tidak ada pustaka animasi kedua yang perlu diunduh:
+konten lama fade-out naik 24px (0,32 dtk) → `navigate()` + scroll ke atas →
+konten baru fade-in turun (0,7 dtk). Tombol back/forward browser mendapat fade
+cepat 0,45 dtk. Guard `busyRef` mencegah navigasi ganda; klik link halaman aktif
+= scroll ke atas.
 
-Sejak kanvas WebGL dihapus, tidak ada lagi tween uniform shader: transisi murni
-DOM. Transform hanya menyentuh wrapper konten — Nav ada di **luar** wrapper dan
-overlay works di-render lewat **portal**, jadi tak ada lagi `position: fixed`
-yang rusak dan tak perlu tambalan `clearProps`.
+Sejak kanvas WebGL dihapus, tidak ada lagi tween uniform shader. Transform hanya
+menyentuh wrapper konten — Nav ada di **luar** wrapper dan overlay works
+di-render lewat **portal**, jadi tak ada `position: fixed` yang rusak.
 
 ### 4. Motion — enter/exit & reveal saat terlihat
 
@@ -154,6 +155,8 @@ yang rusak dan tak perlu tambalan `clearProps`.
   dibungkus `AnimatePresence` + panel `key`-remount (scale 0.97 → 1) tiap
   ganti karya — termasuk saat prev/next.
 - Easing tunggal di seluruh situs: `[0.22, 1, 0.36, 1]` (easeOutExpo-ish).
+- **Gelombang footer**: `animate()` Motion dengan `stagger(0.04)`, keyframes
+  `y: ['0%','-14%','0%']` — dulu GSAP `yoyo` + `repeat`.
 - **Kursor custom** (`Cursor.tsx`, desktop fine-pointer saja): titik + cincin
   `mix-blend-difference` mengikuti mouse via rAF lerp ganda (cepat +
   lambat), membesar di `a`/`button`, menampilkan label dari atribut
@@ -187,6 +190,9 @@ sendiri:
 - Counter duduk tetap di kanan-bawah; hanya angkanya yang naik.
 - Selesai mengikuti event `ended` video; fallback 4,5 dtk; error video langsung
   selesai; reduced-motion → 0,7 dtk tanpa video & counter.
+- Videonya di-crop persis ke kotak 112px lalu di-encode ulang: **788 kB → 74 kB**
+  (240×240, bukan 1280×720) tanpa perubahan yang terlihat — `object-cover` memang
+  sudah memotong bagian tengahnya.
 
 ---
 
@@ -245,20 +251,27 @@ dan loader-nya.
     │   ├── Journal.tsx       → daftar tulisan (/journal)
     │   ├── JournalPost.tsx   → isi tulisan (/journal/:slug)
     │   └── NotFound.tsx      → halaman 404 ("nyasar.")
-    ├── data/works.ts         → 11 karya + kontak: meta, thumb/galeri/blur, cerita, angka
+    ├── data/
+    │   ├── works.ts          → 11 karya + kontak: meta, thumb/galeri/blur, cerita, angka
+    │   └── image-dims.ts     → OTOMATIS dari scripts/media.mjs (ukuran + varian)
     ├── lib/
     │   ├── journal.ts        → loader + parser markdown jurnal
+    │   ├── img.ts            → srcSet + dimensi intrinsik dari image-dims.ts
     │   └── transition.tsx    → TLink + transisi DOM antar halaman
     ├── hooks/
     │   ├── useJakartaTime.ts   → jam WIB live per detik
     │   └── useStudioStatus.ts  → status kocak mengikuti jam Jakarta
-    └── assets/fonts/         → 5 file woff2 self-hosted
+    └── assets/fonts/         → 5 woff2 self-hosted (sudah di-subset Latin-1)
+
+scripts/
+├── sitemap.mjs               → prebuild: sitemap dari slug works.ts + berkas jurnal
+├── media.mjs                 → prebuild: dimensi & varian gambar → src/data/image-dims.ts
+└── subset-fonts.sh           → manual: subset font ke Latin-1 (butuh fonttools)
 ```
 
-Alur data animasi: scroll native → Lenis (digerakkan GSAP ticker) →
-ScrollTrigger atau loop rAF yang menulis `style` langsung, **tanpa state React**.
-State React hanya untuk UI diskret (spotlight works, overlay terbuka, urutan
-acak, route).
+Alur data animasi: scroll native → Lenis (loop rAF) → loop scrub / observer yang
+menulis `style` langsung, **tanpa state React**. State React hanya untuk UI
+diskret (spotlight works, overlay terbuka, urutan acak, route).
 
 ---
 
@@ -294,34 +307,52 @@ Satu codebase, dua target — dibedakan otomatis oleh `vite.config.ts`:
 
 ## Performa
 
-- **Tanpa kanvas WebGL**: latar void dari CSS — nol biaya GPU, nol 517 kB JS.
-- **Loader hanya di `/`** dan tidak menahan route lain, jadi halaman dalam
-  langsung render dari HTML pertama.
-- Works mobile tanpa CSS multicol (1 kolom flex) — multicol + gambar adalah
-  biang jank scroll Android.
-- Gambar: webp self-hosted (maks 1200px, q80) + placeholder blur mungil
-  (~1KB data URI) yang fade ke gambar tajam saat `onLoad` + `loading="lazy"`
-  + `decoding="async"` + boks aspect-ratio (nol layout shift).
-- Meta share: `og:*` + `twitter:card` + canonical menunjuk domain Vercel
-  (URL absolut → valid dari kedua platform deploy).
-- Scrub manifesto & counter loader memakai mutasi DOM langsung, bukan state
-  React.
-- Font self-hosted woff2: tanpa render-blocking pihak ketiga.
+Diukur dengan Chromium + Playwright pada **build produksi statis**, CPU 4× dan
+jaringan Slow 4G (1,6 Mbps / RTT 150 ms), n=2 ambil terbaik per sel. Angka
+"sebelum" = commit `686de83` di `main`.
 
-**Angka bundle (hasil `npm run build`):**
+| | mobile `/` | mobile `/works/:slug` | mobile `/about` | desktop `/` |
+| --- | --- | --- | --- | --- |
+| **LCP** | 4.273 → **3.699 ms** (−13%) | 3.140 → **2.124 ms** (−32%) | 3.120 → **2.006 ms** (−36%) | 2.384 → **716 ms** (−70%) |
+| **TBT** | 191 → **88 ms** | 136 → **57 ms** | 162 → **62 ms** | 57 → **0 ms** |
+| **JS** | 335 → **157 kB** (−53%) | 335 → **155 kB** (−54%) | 335 → **144 kB** (−57%) | 335 → **157 kB** (−53%) |
+| **Total transfer** | 737 → **493 kB** (−33%) | 468 → **250 kB** (−47%) | 441 → **221 kB** (−50%) | 1.113 → **701 kB** (−37%) |
+| **CLS** | 0.0007 → 0.0007 | 0.11 → **0.0001** | 0.007 → 0.0085 | 0.0187 → 0.0187 |
 
-| | JS mentah | JS gzip |
-| --- | --- | --- |
-| Sebelum refactor Phase 1 | ±1.157 kB | ±340 kB |
-| Sesudah | ±639 kB | ±209 kB |
+Yang membuatnya turun:
 
-Sisa kerja yang masih terbuka: chunk `index-*.js` (react + gsap + motion +
-lenis + router) masih ±546 kB mentah / ±183 kB gzip. Kandidat Phase 2:
-`manualChunks` untuk caching, menunda GSAP/ScrollTrigger sampai setelah paint
-pertama, dan mengganti animasi reveal yang paling sederhana (fade/translate)
-dengan CSS agar `motion` bisa menyusut.
+- **Nol pustaka animasi ekstra di jalur kritis.** GSAP + ScrollTrigger (±45 kB
+  gzip) dihapus seluruhnya; empat pemakaiannya diganti rAF /
+  IntersectionObserver / `animate()` Motion. three.js (±130 kB gzip) keluar di
+  Phase 1.
+- **Lenis (±6 kB gzip) & Vercel Analytics (±1,5 kB gzip)** diimpor dinamis.
+- **Loader hanya di `/`** dan tidak menahan route lain; video intro 788 → 74 kB.
+- **Font di-subset ke Latin-1 + tanda baca yang dipakai:** 96 → 67 kB, dan
+  `general-sans-500` di-preload (plugin Vite) supaya tagline LCP tidak menunggu
+  CSS selesai diparse.
+- **Gambar responsif + dimensi intrinsik:** varian `-800.webp` dipilih browser
+  lewat `srcSet`/`sizes` (terverifikasi: 7 dari 11 sel di mobile memakai varian
+  800px), dan `width`/`height` dari `scripts/media.mjs` memesan ruang lebih dulu
+  → CLS halaman case study turun dari 0,11 ke 0,0001.
+- **`manualChunks`** memisahkan vendor (react/motion/router) supaya cache tidak
+  batal tiap rilis dan unduhan berjalan paralel.
+- Scrub manifesto, counter loader, dan drift About memakai mutasi DOM langsung —
+  tanpa state React.
 
----
+**Sisa yang masih terbuka** (belum dikerjakan, urut potensi):
+
+1. `vendor-motion` masih **45 kB gzip** di jalur kritis. Bisa dipangkas dengan
+   `LazyMotion` + `m` (fitur dimuat setelah paint) — perlu uji visual ketat
+   karena animasi entrance loader/hero ikut terdampak.
+2. `vendor-react` + `vendor-router` = **83 kB gzip** — sulit dihindari tanpa
+   ganti kerangka.
+3. **Grayscale permanen**: semua gambar dirender lewat `.img-mono`, jadi file
+   webp-nya bisa dikonversi ke grayscale sungguhan (−13%, terukur 3,53 → 3,08 MB).
+   Tidak dilakukan karena sulit dibalik kalau nanti ada redesign berwarna.
+4. OG jpg 11 berkas = 1,0 MB (hanya diambil crawler/platform share, bukan
+   pengunjung) — bisa di-encode ulang q76 progressive.
+5. `works.ts` 49,9 kB mentah (8,8 kB gzip) sebagian besar base64 blur; bisa
+   dipindah ke berkas terpisah, tapi menambah satu perjalanan.
 
 ## Kustomisasi Cepat
 
@@ -338,11 +369,37 @@ dengan CSS agar `motion` bisa menyusut.
 | Tulisan jurnal  | tambah `content/journal/slug.md` (frontmatter: title/date/desc/tags) |
 | Domain SEO      | `src/components/Seo.tsx` (`SITE_URL`) + `scripts/sitemap.mjs` (`SITE`) |
 | Warna / font    | `src/index.css` (`@theme`) |
+| Tambah/ganti gambar karya | taruh webp di `public/images/works/`, buat varian `-800.webp`, jalankan `npm run media` |
+| Regenerasi subset font | `./scripts/subset-fonts.sh` (butuh `pip install fonttools brotli`) |
+| Encode ulang video loader | `ffmpeg -i in.mp4 -vf "crop=min(iw\,ih):min(iw\,ih),scale=240:240:flags=area" -c:v libx264 -crf 34 -preset slow -pix_fmt yuv420p -an -movflags +faststart out.mp4` |
 | Copy about      | `src/routes/About.tsx` |
 
 ---
 
 ## Riwayat Refactor
+
+### Phase 2 — kejar performa (21 Sep 2026)
+
+Fokus: angka. Nol perubahan desain, kecuali memperbaiki CLS yang memang bug.
+
+- **GSAP + ScrollTrigger dibuang total** (empat pemakaian): scroll-spy works →
+  `IntersectionObserver`; drift About → loop scrub rAF (rasa "karet" sama);
+  gelombang footer → `animate()` Motion; transisi halaman → `animate()` Motion
+  berurutan. Jalur kritis turun ±45 kB gzip.
+- **Lenis & Vercel Analytics jadi impor dinamis**; Lenis digerakkan loop rAF
+  sendiri, dan scroll native tetap jalan sebelum Lenis siap.
+- **Video loader di-encode ulang** 788 → 74 kB (240×240, crop tengah persis
+  seperti yang selama ini dipotong `object-cover`).
+- **Gambar responsif**: 27 varian `-800.webp` dengan `srcSet`/`sizes` di kolase,
+  overlay, hero & galeri case study; `width`/`height` intrinsik (CLS case study
+  0,11 → 0,0001) plus `fetchPriority="high"` untuk hero case study.
+- **Font di-subset** ke Latin-1 + tanda baca yang dipakai (96 → 67 kB) dengan
+  skrip regenerasi, plus preload satu font lewat plugin Vite (nama ber-hash
+  diselesaikan setelah build).
+- **`manualChunks`** memisahkan vendor; `scripts/media.mjs` ikut prebuild dan
+  memvalidasi ketersediaan varian gambar.
+
+Angka lengkap + sisa pekerjaan ada di bagian [Performa](#performa).
 
 ### Phase 1 — struktur + performa (21 Sep 2026)
 
@@ -374,4 +431,4 @@ Foto kondisi sebelum refactor (audit lengkap baris per baris) ada di
 
 ---
 
-Dibuat iseng-iseng dengan React + GSAP + Motion. © 2026 WAH:ANGGAAA.
+Dibuat iseng-iseng dengan React + Motion. © 2026 WAH:ANGGAAA.
