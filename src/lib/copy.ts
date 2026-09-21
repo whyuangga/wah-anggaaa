@@ -169,3 +169,110 @@ export const WORKS: Work[] = [
     blurb: 'Editorial mode Issue No. 01: mood, bukan tren.',
   },
 ];
+
+/* ============================================================================
+   DETAIL KARYA — isi overlay saat sebuah karya dibuka.
+
+   Struktur meniru halaman case di iamrossmason.com:
+     judul besar + (tahun)  →  baris meta (Kategori / Peran · Status)
+     →  foto hero           →  pernyataan  →  galeri  →  next project.
+   Foto diambil dari landing page tiap projek (lihat assets/works/<slug>/).
+   Teks pernyataan adalah DRAF — kamu yang menyetujuinya nanti.
+   ========================================================================== */
+
+/** letak sebuah foto di galeri: penuh lebar · menyamping (inset) · dua bersebelahan */
+export type LetakGaleri = 'penuh' | 'senja' | 'pasangan';
+
+export type FotoGaleri = {
+  file: string;
+  w: number;
+  h: number;
+  letak: LetakGaleri;
+};
+
+export type DetailKarya = {
+  /** judul pernyataan (padanan h2 .h3 di case mereka) */
+  pernyataan: string;
+  /** paragraf pernyataan (padanan .txt) */
+  paragraf: string[];
+  galeri: FotoGaleri[];
+};
+
+const f = (file: string, w: number, h: number, letak: LetakGaleri): FotoGaleri => ({
+  file,
+  w,
+  h,
+  letak,
+});
+
+export const DETAIL: Record<string, DetailKarya> = {
+  oskovia: {
+    pernyataan: 'Lima proyek, satu bahasa.',
+    paragraf: [
+      'Oskovia adalah studio desain khayalan dengan lima proyek berhalaman kasus masing-masing — Meridian Press, Kertas Atelier, Sonder Type, Halftone Club, dan Terrazzo House.',
+      'Kertas krem, angka raksasa, dan nomor berkas yang jadi bintang. Hierarki datang dari ukuran dan spasi, bukan dari warna.',
+    ],
+    galeri: [f('oskovia/pr-01.webp', 1600, 1600, 'penuh'), f('oskovia/pr-02.webp', 1600, 1600, 'senja'), f('oskovia/pr-03.webp', 1600, 1600, 'pasangan'), f('oskovia/pr-04.webp', 1600, 1600, 'pasangan'), f('oskovia/pr-05.webp', 1600, 1600, 'penuh')],
+  },
+  vesusia: {
+    pernyataan: 'Ruang gelap, mark yang menyala.',
+    paragraf: [
+      'Rumah produksi dengan sedikit kata: Karya, Studio, Talenta, Kontak. Situs lebih banyak berdiam daripada menjelaskan — persis seperti ruang rekaman.',
+      'Nama-namanya sengaja belum terisi. Sebuah produksi rumah bukan katalog; ia moodboard yang menunggu tayangan.',
+    ],
+    galeri: [
+      f('vesusia/logo-vesusia.png', 1774, 887, 'penuh'),
+      // foto "melayang" di landing-nya dirender di canvas (WebGL) — tidak bisa
+      // diambil sebagai aset, jadi yang masuk galeri adalah tangkapannya.
+      f('vesusia/babak-01.png', 1600, 900, 'senja'),
+    ],
+  },
+  onderre: {
+    pernyataan: 'Objects with a point of view.',
+    paragraf: [
+      'Tiga objek disusun per babak bernomor — Form 01, Material Study, Object 03 — lalu arsip material yang disengaja tidak selesai.',
+      'Motto-nya sendiri: not everything needs to explain itself.',
+    ],
+    galeri: [f('onderre/hero-onderre.webp', 928, 1152, 'senja'), f('onderre/object-01.webp', 928, 1152, 'pasangan'), f('onderre/object-02.webp', 1312, 816, 'pasangan'), f('onderre/object-03.webp', 928, 1152, 'penuh'), f('onderre/archive-01.webp', 928, 1152, 'senja'), f('onderre/archive-02.webp', 1024, 1024, 'senja')],
+  },
+  lexindra: {
+    pernyataan: 'Sepuluh koleksi cahaya.',
+    paragraf: [
+      'Kaca patri buatan tangan sejak 2012: sepuluh koleksi dari Aurea sampai Rosea, aplikasi jendela sampai fasad, dan proyek arsitektur dari Villa Serambi ke Chapel of Light.',
+      'Situs paling dalam dari delapan — sebuah arsip cahaya yang bisa digali, bukan sekadar dilihat.',
+    ],
+    galeri: [f('lexindra/hero-craft.jpg', 1376, 768, 'penuh'), f('lexindra/hero-heritage.jpg', 1376, 768, 'senja'), f('lexindra/col-aurea.jpg', 896, 1200, 'pasangan'), f('lexindra/world-villa-serambi.jpg', 896, 1200, 'pasangan'), f('lexindra/hero-bespoke.jpg', 1376, 768, 'penuh'), f('lexindra/app-windows.jpg', 1376, 768, 'senja')],
+  },
+  glint: {
+    pernyataan: 'Dua perspektif, satu kilauan.',
+    paragraf: [
+      'Kacamata dan perhiasan bertema Y2K. Morning Glint sebagai drop perdana, Evening Glint untuk malam.',
+      'Silver wire frame dan chrome hoop, dipajang seperti kampanye — bukan katalog.',
+    ],
+    galeri: [f('glint/lookbook.jpg', 1376, 768, 'penuh'), f('glint/sunglasses.jpg', 896, 1200, 'pasangan'), f('glint/earrings.jpg', 896, 1200, 'pasangan'), f('glint/hero.jpg', 896, 1200, 'senja')],
+  },
+  ocular: {
+    pernyataan: 'Narasi sinematik prostetik.',
+    paragraf: [
+      'Sebuah dunia sci-fi yang diceritakan lewat lensa: mata sibernetik, visor mode, dan detail kaca yang dipesan satu per satu.',
+      'Setiap frame disusun seperti shot list, bukan galeri — versi final, bukan rough cut.',
+    ],
+    galeri: [f('ocular/proj1.jpg', 1536, 1024, 'penuh'), f('ocular/proj2.jpg', 1536, 1024, 'senja'), f('ocular/proj3.jpg', 1024, 1536, 'pasangan'), f('ocular/proj3-detail1.jpg', 1024, 1536, 'pasangan'), f('ocular/proj1-detail1.jpg', 1536, 1024, 'penuh')],
+  },
+  aethelgard: {
+    pernyataan: 'The language of forgotten gardens.',
+    paragraf: [
+      'Arsip botani yang dikumpulkan dengan niat: benda langka, jurnal, dan ritual kecil.',
+      'Curated, considered — tenang, dan tidak perlu menjelaskan dirinya sendiri.',
+    ],
+    galeri: [f('aethelgard/foreground.png', 768, 1376, 'senja'), f('aethelgard/hero-v2.webp', 928, 1152, 'senja')],
+  },
+  elan: {
+    pernyataan: 'Mood, bukan tren.',
+    paragraf: [
+      'Editorial mode Issue No. 01. Style is not what you wear — it\'s how you arrive.',
+      'Look utilitarian, detail mata dan kain yang diperbesar, ditutup campaign final. Sepatu tidak pernah muncul; mood yang berpose.',
+    ],
+    galeri: [f('elan/model-main.jpg', 896, 1200, 'senja'), f('elan/look-01.jpg', 896, 1200, 'pasangan'), f('elan/look-02.jpg', 896, 1200, 'pasangan'), f('elan/detail-eyes.jpg', 1200, 896, 'penuh'), f('elan/detail-fabric.jpg', 1200, 896, 'senja'), f('elan/look-03.jpg', 896, 1200, 'pasangan'), f('elan/finale-campaign.jpg', 896, 1200, 'pasangan')],
+  },
+};

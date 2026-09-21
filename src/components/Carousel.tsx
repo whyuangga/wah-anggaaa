@@ -18,40 +18,64 @@ const FOTO = import.meta.glob('../../assets/works/*-hero-*.webp', {
   import: 'default',
 }) as Record<string, string>;
 
-const foto = (slug: string, lebar: 800 | 1600) =>
+export const fotoHero = (slug: string, lebar: 800 | 1600) =>
   FOTO[`../../assets/works/${slug}-hero-${lebar}.webp`];
 
+/** Posisi yang dipegang saat karya diklik — bebenet untuk transisi overlay. */
+export type PosisiKlik = {
+  slug: string;
+  src: string;
+  slide: { x: number; y: number; w: number; h: number };
+  /** tepi atas wadah strip, dalam koordinat layar saat klik */
+  stageTop: number;
+};
+
 /**
- * CAROUSEL KARYA — delapan karya, satu baris, digerakkan roda/geseran.
+ * CAROUSEL KARYA — delapan karya, satu baris, LOOPING TAK BERUJUNG,
+ * digerakkan roda/geseran/papan ketik; klik membuka overlay detail.
  *
- * MEKANISME DIAMBIL DARI iamrossmason.com (bedah kode ada di
- * /home/user/reference/rossmason-riset/, ringkasannya di docs/SPEC-CAROUSEL.md).
- * Intinya persis seperti aslinya — nama variabel dan nama kelas sengaja
- * dipertahankan supaya kode ini bisa dibaca berdampingan dengan sumbernya:
+ * MEKANISME DIAMBIL DARI iamrossmason.com (kode sumber terbedah ada di
+ * /home/user/reference/rossmason-riset/, ringkasan di docs/SPEC-CAROUSEL.md).
+ * Nama variabel & kelas sengaja sama dengan sumbernya (`t`, `tc`, `diff`,
+ * `--x`, `--x-text`, `--scale`, `--diff`, `.is-big`, `.is-left`, `.is-right`,
+ * `.is-not-visible`) supaya bisa dibaca berdampingan.
  *
- *   • Satu skalar `--diff` (0→1) di elemen track mengendalikan SELURUH gerakan:
- *     `--x-output`, `--x-text-output`, `--scale-output` semuanya hasil kali
- *     `--x/--x-text/--scale` (dipilih oleh kelas is-left/is-right/is-big)
- *     dengan `--diff`. Jadi tidak ada animasi per-item: hanya satu variabel CSS
- *     yang ditulis tiap frame.
- *   • Saat strip masih bergerak `--diff → 0` → grid rapat & rata.
- *     Saat berhenti `--diff → 1` → karya di tengah membesar 2× dan
- *     tetangganya bergeser ±50% lebar sel untuk memberi ruang.
- *   • Posisi halus (tc) mengejar posisi target (t) dengan `tc += (t-tc) * 0.1`,
- *     persis lerp milik mereka.
- *   • Berhenti 130 ms → SNAP ke kelipatan lebar sel terdekat (mereka 100 ms).
+ * Intinya persis seperti aslinya:
+ *   • SATU skalar `--diff` (0→1) di elemen track mengendalikan seluruh gerakan.
+ *   • Posisi halus (tc) mengejar target (t) dengan `tc += (t-tc) * 0.1`.
+ *   • Berhenti 130 ms → SNAP ke kelipatan lebar sel terdekat.
+ *
+ * LOOPING — bagian yang dulu versi kita masih berhujung:
+ *   Di sumber, tiap slide diberi transform SENDIRI (bukan track-nya):
+ *     t_item = wrap(right - max, right, tc)      ← modul 724, fungsi transforms()
+ *     translate3d(-t_item, 0, 0)
+ *   Karena `right` per slide berbeda, tiap slide "berbalik" ke ujung strip di
+ *   saat yang berbeda — dan karena jarak balik (max) lebih lebar dari layar,
+ *   pembalikan itu terjadi di luar layar: tidak pernah terlihat. Hasilnya
+ *   strip tak pernah habis: gulir terus, karya terus berputar.
+ *   Kelas `is-left`/`is-right` di sumber bukan dari indeks slide, melainkan
+ *   dari posisi slide terhadap pusat LAYAR (parameter p):
+ *     p = clamp(0, 1, (t_item - (right - vw)) / (vw - width));  p > 0.5 → is-left
+ *   dan karya besar = slide yang tepinya paling dekat ke acuan
+ *     vw/2 + lebarSel/2 − 5  (fungsi idx() di sumber).
  *
  * Yang berbeda karena keadaan kita memang lain (lihat SPEC §2):
- *   • Halaman kita panjang, bukan setinggi satu layar. Jadi seksi ini
- *     `position: sticky` setinggi `100vh + jarak tempuh`; posisi gulir vertikal
- *     dipetakan 1:1 ke geseran strip — rasio yang sama dengan situs aslinya.
- *   • Sel 20vw (5 karya per layar) dan rasionya 16:10 asli foto, bukan 4:5,
- *     karena foto kita tidak boleh di-crop.
- *   • Di mobile & saat `prefers-reduced-motion`, penjepitan halaman dimatikan:
- *     strip jadi wadah gulir horizontal asli (native scroll-snap).
- *   • Klik karya belum membuka apa pun — overlay detail menyusul.
+ *   • Halaman kita panjang, bukan setinggi satu layar. Seksi ini `sticky`
+ *     setinggi `100vh + jarak satu putaran penuh`; gulir vertikal dipetakan 1:1
+ *     ke geseran strip. Karena layout bersifat periodik (di t = max tampilannya
+ *     identik dengan t = 0), satu jarak gulir penuh = satu putaran lengkap
+ *     8 karya, lalu pin terlepas ke seksi berikutnya.
+ *   • Sel 20vw dan rasio 16:10 asli (foto tidak boleh di-crop, aturan ⑦).
+ *   • Mobile & `prefers-reduced-motion`: wadah gulir horizontal asli.
  */
-export default function Carousel() {
+export default function Carousel({
+  jeda,
+  onOpen,
+}: {
+  /** overlay detail sedang terbuka → mesin dijeda */
+  jeda: boolean;
+  onOpen: (posisi: PosisiKlik) => void;
+}) {
   const pin = useRef<HTMLElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const track = useRef<HTMLDivElement>(null);
@@ -77,8 +101,9 @@ export default function Carousel() {
     };
   }, []);
 
-  usePenjepitan({ pin, panel, track, slides, aktif: !asli });
+  usePenjepitan({ pin, panel, track, slides, aktif: !asli, jeda, onOpen });
   useMasuk({ panel, aktif: !asli });
+  useKlikAsli({ aktif: asli, onOpen });
 
   return (
     <section id="karya" ref={pin} className="karya-pin" aria-label="Karya terpilih">
@@ -93,12 +118,14 @@ export default function Carousel() {
               }}
               className="karya-slide"
               data-slug={w.slug}
+              tabIndex={-1}
             >
               {/* caption DI ATAS foto — mengikuti referensi */}
               <div className="karya-caption">
                 <p className="t-label t-figure mask-sup">
                   <span data-mask-inner className="block">
-                    {String(i + 1).padStart(2, '0')}.
+                    {String(i + 1).padStart(2, '0')}
+                    .
                   </span>
                 </p>
                 <h3 className="t-work mask-sup">
@@ -117,8 +144,8 @@ export default function Carousel() {
               <div className="karya-scale">
                 <img
                   className="karya-foto"
-                  src={foto(w.slug, 800)}
-                  srcSet={`${foto(w.slug, 800)} 800w, ${foto(w.slug, 1600)} 1600w`}
+                  src={fotoHero(w.slug, 800)}
+                  srcSet={`${fotoHero(w.slug, 800)} 800w, ${fotoHero(w.slug, 1600)} 1600w`}
                   sizes="(min-width: 768px) 20vw, 100vw"
                   width={1600}
                   height={1000}
@@ -154,11 +181,23 @@ export default function Carousel() {
 
 type Ref<T> = React.RefObject<T>;
 
+const clamp = (a: number, b: number, v: number) => Math.min(b, Math.max(a, v));
+
 /**
- * PENJEPITAN — mesin intinya.
+ * `wrap(min, max, v)` — salinan langsung `gsap.utils.wrap` dari sumber
+ * (modul 724): membalik nilai ke dalam rentang [min, max).
+ */
+const wrap = (min: number, max: number, v: number) => {
+  const rentang = max - min;
+  return ((v - min) % rentang + rentang) % rentang + min;
+};
+
+/**
+ * PENJEPITAN — mesin inti, termasuk LOOPING.
  *
- * Semua angka dihitung di sini dengan sengaja memakai nama seperti sumbernya:
- * `t` (target), `tc` (posisi halus), `diff`, `cell`, `max`.
+ * Beda utama dengan versi berhujung: track TIDAK lagi di-transform. Tiap slide
+ * mendapat transform sendiri dari rumus `wrap` sumber — itu yang membuat
+ * strip tak pernah habis.
  */
 function usePenjepitan({
   pin,
@@ -166,13 +205,19 @@ function usePenjepitan({
   track,
   slides,
   aktif,
+  jeda,
+  onOpen,
 }: {
   pin: Ref<HTMLElement | null>;
   panel: Ref<HTMLDivElement | null>;
   track: Ref<HTMLDivElement | null>;
   slides: Ref<(HTMLElement | null)[]>;
   aktif: boolean;
+  jeda: boolean;
+  onOpen: (posisi: PosisiKlik) => void;
 }) {
+  const jedaRef = useRef(jeda);
+  jedaRef.current = jeda;
   useEffect(() => {
     if (!aktif) return;
     const el = pin.current;
@@ -180,24 +225,20 @@ function usePenjepitan({
     const tr = track.current;
     if (!el || !pn || !tr) return;
 
-    const clamp = (a: number, b: number, v: number) => Math.min(b, Math.max(a, v));
-
     const s = {
       cell: 0,
-      max: 0, // jarak tempuh total (px)
+      max: 0, // lebar seluruh strip = jarak satu putaran penuh (px)
       t: 0,
       tc: 0,
       prev: -1,
       lastChange: performance.now(),
       lastSnap: 0,
-      active: -1,
       drag: false,
       downX: 0,
       downY: 0,
       startY: 0,
       gerak: 0,
       top: 0,
-      marginTrack: 0,
       raf: 0,
     };
 
@@ -209,8 +250,8 @@ function usePenjepitan({
       if (!first || !bawah || !bar || !caption) return;
 
       s.cell = first.getBoundingClientRect().width;
-      // jarak tempuh = lebar seluruh strip − lebar layar (8 sel × 20vw − 100vw = 60vw)
-      s.max = Math.max(0, s.cell * WORKS.length - window.innerWidth);
+      // jarak satu putaran = lebar seluruh strip (8 sel × 20vw = 160vw)
+      s.max = Math.max(0, s.cell * WORKS.length);
       s.top = el.getBoundingClientRect().top + window.scrollY;
       el.style.height = `${window.innerHeight + s.max}px`;
       s.t = clamp(0, s.max, s.t);
@@ -218,13 +259,10 @@ function usePenjepitan({
 
       /*
        * POSISI BAND DIHITUNG, BUKAN DITEBAK.
-       *
        * Karya yang sedang membesar 2× tingginya = 2 × (lebar sel × 10/16), dan
-       * blok bawah (bar + wordmark) tingginya ikut berubah di tiap ukuran layar.
-       * Margin tetap akan bertabrakan di satu ukuran dan menyisakan lubang di
-       * ukuran lain. Jadi: blok "caption + karya besar" ditaruh tepat di tengah
-       * ruang antara tepi atas panel dan garis bar — lalu dijepit supaya
-       * captionnya tidak keluar ke atas dan fotonya tidak menabrak bar.
+       * blok bawah (bar + wordmark) ikut berubah di tiap ukuran layar.
+       * Blok "caption + karya besar" ditaruh di tengah ruang antara tepi atas
+       * panel dan garis bar, lalu dijepit dua arah.
        */
       pn.style.setProperty('--strip-atas', '0px');
       const tepiAtasPanel = pn.getBoundingClientRect().top;
@@ -236,15 +274,16 @@ function usePenjepitan({
 
       const tinggiBand = tinggiCaption + tinggiBesar;
       let atas = PAD + (barAtas - PAD - tinggiBand) / 2; // = posisi atas caption
-      // jepit: caption jangan mepet ke tepi atas, foto jangan menabrak bar
       atas = Math.max(PAD + 8, atas);
       atas = Math.min(atas, barAtas - JEDA - tinggiBesar - tinggiCaption);
-      s.marginTrack = Math.max(0, atas + tinggiCaption - PAD);
-      pn.style.setProperty('--strip-atas', `${Math.round(s.marginTrack)}px`);
+      pn.style.setProperty('--strip-atas', `${Math.max(0, Math.round(atas + tinggiCaption - PAD))}px`);
     };
 
     const loop = () => {
-      const tengah = window.innerWidth / 2;
+      s.raf = requestAnimationFrame(loop);
+      if (jedaRef.current) return; // overlay terbuka — semua beku
+
+      const vw = window.innerWidth;
 
       // 1. posisi target dari posisi gulir (pemetaan 1:1, seperti aslinya)
       s.t = clamp(0, s.max, window.scrollY - s.top);
@@ -252,36 +291,52 @@ function usePenjepitan({
       // 2. posisi halus — lerp 0.1, sama seperti sumbernya
       s.tc += (s.t - s.tc) * 0.1;
 
-      // 3. SATU skalar untuk seluruh gerakan
-      const diff = clamp(0, 1, 1 - Math.abs(s.t - s.tc) * 0.001);
-      tr.style.setProperty('--diff', String(diff));
-      tr.style.transform = `translate3d(${-s.tc}px, 0, 0)`;
+      // 3. SATU skalar untuk seluruh gerakan (ditulis di wrapper, seperti sumber)
+      tr.style.setProperty('--diff', String(clamp(0, 1, 1 - Math.abs(s.t - s.tc) * 0.001)));
 
-      // 4. kelas per slide: yang paling dekat ke tengah = is-big, sisanya
-      //    is-left / is-right; yang di luar layar dapat is-not-visible
-      let dekat = 0;
-      let jarak = Infinity;
-      const rects = slides.current.map((sl) => (sl ? sl.getBoundingClientRect() : null));
-      rects.forEach((r, i) => {
-        if (!r) return;
-        const d = Math.abs(r.left + r.width / 2 - tengah);
-        if (d < jarak) {
-          jarak = d;
-          dekat = i;
-        }
-      });
-      s.active = dekat;
-      rects.forEach((r, i) => {
+      // 4. LOOPING: transform per slide dari rumus wrap sumber.
+      //    t_item = wrap(right - max, right, tc)  →  translate3d(-t_item, 0, 0)
+      const kanan = slides.current.map((_, i) => (i + 1) * s.cell);
+      const vw2 = vw;
+      let tItem = 0;
+      for (let i = 0; i < slides.current.length; i++) {
         const sl = slides.current[i];
-        if (!sl || !r) return;
-        const kiri = r.left + r.width / 2 < tengah;
-        sl.classList.toggle('is-big', i === s.active);
-        sl.classList.toggle('is-left', i !== s.active && kiri);
-        sl.classList.toggle('is-right', i !== s.active && !kiri);
-        sl.classList.toggle('is-not-visible', r.right < 0 || r.left > window.innerWidth);
+        if (!sl) continue;
+        const kiri = i * s.cell;
+        const r = kanan[i];
+        tItem = wrap(r - s.max, r, s.tc);
+        sl.style.transform = `translate3d(${-tItem}px, 0, 0)`;
+        // visibilitas persis sumber: t_item > kiri - vw - w  &&  t_item < kanan + w
+        sl.classList.toggle(
+          'is-not-visible',
+          !(tItem > kiri - vw2 - s.cell && tItem < r + s.cell),
+        );
+      }
+
+      // 5. karya besar = acuan vw/2 + sel/2 − 5 di-snap ke tepi kanan terdekat
+      //    (fungsi idx() di sumber), sisanya is-left/is-right dari p
+      const acuan = wrap(0, s.max, s.tc + vw2 / 2 + s.cell / 2 - 5);
+      const dekat = clamp(1, WORKS.length, Math.round(acuan / s.cell)) * s.cell;
+      const besar = dekat / s.cell - 1;
+      slides.current.forEach((sl, i) => {
+        if (!sl) return;
+        const r = kanan[i];
+        if (i === besar) {
+          sl.classList.add('is-big');
+          sl.classList.remove('is-left', 'is-right');
+          return;
+        }
+        sl.classList.remove('is-big');
+        const p = clamp(0, 1, (tItemDari(i) - (r - vw2)) / (vw2 - s.cell));
+        sl.classList.toggle('is-left', p > 0.5);
+        sl.classList.toggle('is-right', p <= 0.5);
       });
 
-      // 5. diam 130 ms → snap ke kelipatan lebar sel
+      function tItemDari(i: number) {
+        return wrap(kanan[i] - s.max, kanan[i], s.tc);
+      }
+
+      // 6. diam 130 ms → snap ke kelipatan lebar sel (dijepit 0..max: satu putaran)
       if (Math.abs(s.t - s.prev) > 0.4) {
         s.prev = s.t;
         s.lastChange = performance.now();
@@ -294,12 +349,11 @@ function usePenjepitan({
           scrollToY(s.top + snap, { duration: 0.55 });
         }
       }
-
-      s.raf = requestAnimationFrame(loop);
     };
 
     /* ── geser dengan tetikus / jari ───────────────────────────────────── */
     const onDown = (e: PointerEvent) => {
+      if (jedaRef.current) return;
       if (e.pointerType === 'mouse' && e.button !== 0) return;
       s.drag = true;
       s.downX = e.clientX;
@@ -313,15 +367,42 @@ function usePenjepitan({
       if (!s.drag) return;
       const dx = e.clientX - s.downX;
       s.gerak = Math.max(s.gerak, Math.hypot(dx, e.clientY - s.downY));
-      if (s.gerak > 4) scrollToY(s.startY - dx, { immediate: true });
+      if (s.gerak > 4) {
+        const tujuan = s.top + clamp(0, s.max, s.startY - s.top - dx);
+        scrollToY(tujuan, { immediate: true });
+      }
     };
-    const onUp = () => {
+    const onUp = (e: PointerEvent) => {
+      const wasDrag = s.drag;
       s.drag = false;
       pn.classList.remove('is-drag');
+      if (!wasDrag) return;
+      // klik (bukan geser) di atas karya → buka overlay detail.
+      // Catatan: e.target di sini bisa jadi panel karena setPointerCapture,
+      // jadi elemen bawah kursor dicari lewat elementFromPoint.
+      if (s.gerak < 6) {
+        const el = document.elementFromPoint(e.clientX, e.clientY);
+        const art = el?.closest?.('.karya-slide');
+        if (art) buka(art);
+      }
+    };
+
+    const buka = (art: Element) => {
+      const img = art.querySelector<HTMLImageElement>('.karya-foto');
+      const slug = art.getAttribute('data-slug') ?? '';
+      if (!img) return;
+      const r = img.getBoundingClientRect();
+      onOpen({
+        slug,
+        src: img.currentSrc || img.src,
+        slide: { x: r.left, y: r.top, w: r.width, h: r.height },
+        stageTop: tr!.getBoundingClientRect().top,
+      });
     };
 
     /* ── papan ketik: satu langkah = satu sel ──────────────────────────── */
     const onKey = (e: KeyboardEvent) => {
+      if (jedaRef.current) return;
       if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
       e.preventDefault();
       const arah = e.key === 'ArrowRight' ? 1 : -1;
@@ -332,7 +413,6 @@ function usePenjepitan({
 
     ukur();
     tr.style.setProperty('--diff', '1');
-    tr.style.transform = 'translate3d(0, 0, 0)';
     s.raf = requestAnimationFrame(loop);
 
     pn.addEventListener('pointerdown', onDown);
@@ -354,7 +434,37 @@ function usePenjepitan({
       window.removeEventListener('orientationchange', ukur);
       el.style.height = '';
     };
-  }, [aktif, pin, panel, track, slides]);
+  }, [aktif, pin, panel, track, slides, onOpen]);
+}
+
+/** Mode gulir asli (mobile / reduced-motion): klik biasa membuka overlay. */
+function useKlikAsli({
+  aktif,
+  onOpen,
+}: {
+  aktif: boolean;
+  onOpen: (posisi: PosisiKlik) => void;
+}) {
+  useEffect(() => {
+    if (!aktif) return;
+    const on = (e: Event) => {
+      const art = (e.target as Element | null)?.closest?.('.karya-slide');
+      if (!art) return;
+      const img = art.querySelector<HTMLImageElement>('.karya-foto');
+      const track = art.closest('.karya-track');
+      const slug = art.getAttribute('data-slug') ?? '';
+      if (!img || !track) return;
+      const r = img.getBoundingClientRect();
+      onOpen({
+        slug,
+        src: img.currentSrc || img.src,
+        slide: { x: r.left, y: r.top, w: r.width, h: r.height },
+        stageTop: track.getBoundingClientRect().top,
+      });
+    };
+    document.addEventListener('click', on);
+    return () => document.removeEventListener('click', on);
+  }, [aktif, onOpen]);
 }
 
 /**

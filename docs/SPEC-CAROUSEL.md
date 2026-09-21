@@ -104,9 +104,15 @@ keluar ke atas dan foto tidak menabrak bar. Hasilnya ditulis ke `--strip-atas`.
 
 ## 7. Yang belum
 
-1. **Overlay detail karya** saat karya diklik (keputusanmu) — termasuk mengambil foto dari
-   landing page tiap projek. Seksi carousel sengaja belum memberi `cursor: pointer` pada foto
-   supaya tidak ada tautan mati; `data-slug` sudah terpasang di tiap `<article>`.
-2. **Mode List** + label toggle di kiri bar bawah.
-3. Uji `--diff` di perangkat asli (Chrome Android/Safari iOS) — sejauh ini hanya peramban
+1. **Mode List** + label toggle di kiri bar bawah.
+2. Uji `--diff` di perangkat asli (Chrome Android/Safari iOS) — sejauh ini hanya peramban
    headless desktop & emulasi mobile.
+
+## 8. Overlay detail karya (SUDAH DIBANGUN, 2026-09-22)
+
+Klik karya membuka `ProjectOverlay.tsx`: foto di-FLIP dua tahap (carousel → stage →
+slot hero, `lib/flip.ts`), judul per huruf, baris meta, pernyataan, galeri rasio asli,
+dan blok [Next project] yang menerbangkan foto preview. Klik ditangkap di `onUp`
+carousel (gerak < 6 px = klik, bukan geser); `data-slug` di tiap `<article>` jadi kunci.
+Mesin carousel dijeda lewat prop `jeda` selama overlay terbuka. Verifikasi lengkap:
+`tools/verify-overlay.mjs` (31 cek — desktop · mobile · reduced-motion).

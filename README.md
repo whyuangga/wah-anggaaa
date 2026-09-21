@@ -2,8 +2,8 @@
 
 Portofolio personal. Dibangun dari nol di repo ini — repo lama (`wah-anggaaa`) sudah dihapus.
 
-**Status: hero ✅ · menu overlay ✅ · carousel karya ✅.**
-Babak berikutnya: overlay detail karya (klik karya) + mode List, lalu halaman sisanya.
+**Status: hero ✅ · menu overlay ✅ · carousel karya ✅ · overlay detail karya ✅.**
+Babak berikutnya: mode List, lalu halaman sisanya.
 Lihat `docs/PLANNING-WHAS.md` dan `docs/SPEC-CAROUSEL.md`.
 
 ```bash
@@ -27,7 +27,9 @@ npm run build      # produksi
 | Logo WHAS (di-trim dari 1,9 MB → 1,1 kB, ke-inline) | ✅ jadi |
 | 8 hero projek (webp, warna asli, tanpa crop) | ✅ siap di `assets/works/` |
 | Carousel karya — 8 projek, mekanisme curian dari iamrossmason.com | ✅ jadi, terukur (lihat `docs/SPEC-CAROUSEL.md`) |
+| Looping tak berujung carousel (wrap per-slide dari sumber) | ✅ jadi, teruji |
 | Wordmark `WHAS` selebar halaman (SVG, teks hidup) | ✅ jadi |
+| Overlay detail karya — klik karya: FLIP terbang, judul per-huruf, galeri, next project | ✅ jadi, teruji (31 cek, 3 mode gerak) |
 | Babak karya · about · contact · notes · 404 | ⏳ belum |
 
 **Ukuran produksi:** JS 114,2 kB gzip (index 11,4 · lenis 5,7 · gsap 27,8 · react 69,2) · CSS 4,7 kB gzip · font 22 kB.
@@ -63,13 +65,15 @@ src/
   App.tsx                kerangka + Lenis (satu loop rAF untuk seluruh situs)
   components/
     Hero.tsx             hero halaman-judul + garis waktu masuk
-    Carousel.tsx         seksi karya — mesin --diff/snap (lihat docs/SPEC-CAROUSEL.md)
+    Carousel.tsx         seksi karya — mesin --diff/snap + looping (docs/SPEC-CAROUSEL.md)
     Wordmark.tsx         WHAS selebar halaman (SVG dengan viewBox yang diukur ke tinta)
     MenuOverlay.tsx      menu penuh layar untuk mobile (muncul < 768px)
+    ProjectOverlay.tsx   overlay detail karya — penerbangan FLIP + reveal (lihat catatan 8)
     Arrow.tsx            panah SVG (General Sans tidak punya glyph panah)
   lib/
     copy.ts              SEMUA TEKS SITUS — ubah kalimat di sini, bukan di komponen
     scroll.ts            satu mesin scroll (Lenis) — stop/start dipakai overlay
+    flip.ts              miniatur GSAP Flip: ambilKotak/terbang (padanan getState/from)
     useJakartaTime.ts    jam WIB untuk nav
   index.css              token 2 warna · 5 peran tipografi · font · lenis
   assets/
@@ -78,7 +82,8 @@ src/
 assets/
   brand/logo-black.png   logo mentah (arsip)
   works/                 8 hero projek — webp 1600 & 800, warna asli, tanpa crop
-    _raw/                PNG mentah 2880×1800 (sumber)
+    <slug>/              foto galeri overlay per projek (rasio asli, tanpa efek)
+    _raw/                PNG mentah 2880×1800 (sumber; di-gitignore)
     _lqip.json           placeholder blur 20px → nol CLS
 docs/
   PLANNING-WHAS.md       rencana build
@@ -137,6 +142,22 @@ putih. Untuk foto terang (oskovia 228,7 / onderre 218,8 / glint 143,8) teks puti
 terbaca, dan satu-satunya penopang lazim — gradasi gelap di atas foto — dilarang aturan ⑥.
 Jadi foto pindah ke carousel, dan keterangannya duduk **di luar** bidang foto.
 
+**8. Overlay detail karya: foto terbang dua tahap, slot hero dijaga tetap tunggal.**
+Transisi masuk meniru halaman case iamrossmason.com satu-satu: T=0 foto yang diklik
+di-FLIP dari sel carousel ke stage sambil halaman lama memudar 0,35 s; T=0,35 foto
+di-FLIP lagi ke slot hero; T=0,85 judul terungkap per huruf; T=1,35 meta. FLIP-nya
+miniatur plugin Flip (`lib/flip.ts`: ukur kotak → animasikan transform, 1 s expo.inOut)
+— tidak menambah dependensi.
+
+Satu jebakan yang sempat kena: selama 0–0,35 s pertama, foto terlihat **ganda** —
+clone yang sedang terbang *plus* foto statis yang sudah menunggu di slot hero.
+Solusinya state `cloneAktif`: selama clone memegang peran, img React di slot
+`visibility: hidden` (bukan opacity — aturan nol opacity tetap utuh). Img React juga
+TIDAK pernah di-`remove()` dari DOM: kalau dilepas, React tak tahu dan render berikut
+(Next project) memperbarui node terlepas → slot hero kosong. Sekarang semua jalur
+(animasi, reduced-motion, next 2×) menutup dengan hero yang tampil — diverifikasi
+`tools/verify-overlay.mjs` (31 cek: desktop · mobile · reduced-motion).
+
 ---
 
 ## Alat di `../tools/`
@@ -146,16 +167,15 @@ node shoot-hero.mjs --all     # ambil ulang hero desktop 8 projek (1440×900 @dp
 python3 prepare-images.py     # PNG mentah → webp apa adanya + LQIP
 node verify-hero.mjs          # screenshot 4 viewport + cek error/overflow (dev server harus jalan)
 node ukur-kecil.mjs           # ukur isian headline di 10 ukuran layar
-node verify-karya.mjs         # uji mekanisme carousel (diff/snap/skala/wheel/drag) + screenshot
-node shoot-karya.mjs          # screenshot seksi karya (1440 · 820 · 390)
-node ukur-wordmark.mjs        # ukur metrik tinta "WHAS" (dipakai untuk viewBox SVG)
+node verify-karya.mjs          # uji mekanisme carousel (diff/snap/skala/wheel/drag) + screenshot
+node verify-overlay.mjs        # 31 cek overlay detail (masuk/next/exit · mobile · reduced)
+node shoot-karya.mjs           # screenshot seksi karya (1440 · 820 · 390)
+node ukur-wordmark.mjs         # ukur metrik tinta "WHAS" (dipakai untuk viewBox SVG)
 ```
 
 ---
 
 ## Langkah berikutnya
 
-1. **Overlay detail karya** — dibuka saat karya diklik. Fotonya diambil dari landing page
-   tiap projek; seksi carousel sudah menyiapkan `data-slug` di setiap `<article>`.
-2. **Mode List** + label di kiri bar bawah (referensi: `Carousel, List`).
-3. Babak sisanya: about · contact · notes · footer · 404 (dan halaman Playground saat kamu siap).
+1. **Mode List** + label toggle di kiri bar bawah (referensi: `Carousel, List`).
+2. Babak sisanya: about · contact · notes · footer · 404 (dan halaman Playground saat kamu siap).
