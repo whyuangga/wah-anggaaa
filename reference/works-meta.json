@@ -1,0 +1,109 @@
+[
+  {
+    "no_lama": "003",
+    "slug": "elan",
+    "title": "ÉLAN",
+    "category": "Fashion Editorial",
+    "year": "'26",
+    "url": "https://elan-fashion-editorial.pages.dev/",
+    "role": "Design",
+    "stack": [
+      "React",
+      "Tailwind",
+      "Lenis"
+    ],
+    "story": [
+      "Issue No. 01 dari majalah mode yang tidak pernah dicetak. ÉLAN lebih peduli mood daripada tren — tiap scroll terasa seperti membalik halaman kertas tebal.",
+      "Tipografi editorial raksasa dipadukan ruang kosong yang berani, karena kemewahan adalah soal jeda."
+    ],
+    "blurb": "Fashion editorial Issue No. 01: mood, bukan tren.",
+    "challenge": "Menerjemahkan kertas majalah ke layar tanpa kehilangan ritual membaliknya — scroll harus terasa seperti jari di antara halaman.",
+    "outcome": "Issue No. 01 yang tidak pernah dicetak tapi selalu dibuka — 24 lembar, 40 persen ruang kosong, nol tren diikuti.",
+    "stats": [
+      [
+        "lembar editorial",
+        "24"
+      ]
+    ]
+  },
+  {
+    "no_lama": "009",
+    "slug": "aethelgard",
+    "title": "Aethelgard",
+    "category": "Archive / Journal",
+    "year": "'26",
+    "url": "https://aethelgard-7e0.pages.dev/",
+    "role": "Story + Code",
+    "stack": [
+      "React",
+      "Lenis"
+    ],
+    "story": [
+      "Arsip sunyi untuk hal-hal yang menolak biasa. Aethelgard adalah jurnal fiktif yang didokumentasikan seolah artefak berusia seabad.",
+      "Ritme bacanya lambat dan khidmat — situs ini tidak peduli bounce rate, yang penting auranya dapat."
+    ],
+    "blurb": "Arsip sunyi untuk hal-hal yang menolak biasa.",
+    "challenge": "Arsip fiktif harus terasa seabad umurnya — padahal dibuat dalam sepekan begadang.",
+    "outcome": "Jurnal sunyi dengan aura artefak: 365 arsip terdokumentasi, bounce rate tidak peduli, pembaca betah.",
+    "stats": [
+      [
+        "arsip",
+        "365"
+      ]
+    ]
+  },
+  {
+    "no_lama": "010",
+    "slug": "ocular",
+    "title": "OCULAR",
+    "category": "Sci-fi Cinematic",
+    "year": "'26",
+    "url": "https://ocular-45z.pages.dev/",
+    "role": "Design + Code",
+    "stack": [
+      "React",
+      "Three.js",
+      "GSAP"
+    ],
+    "story": [
+      "Narasi sci-fi tiga bab tentang mata siber raksasa yang mengawasi kota fiktif. Semakin dalam scroll, semakin dalam pengawasannya.",
+      "Efek lensa, glitch, dan HUD dibuat dengan WebGL — budget filmnya nol rupiah, tapi ambisinya blockbuster."
+    ],
+    "blurb": "Sci-fi sinematik: mata siber dalam tiga bab.",
+    "challenge": "Mata siber raksasa harus mengintimidasi tanpa bikin pengunjung kabur — tegang tapi penasaran.",
+    "outcome": "Blockbuster nol rupiah: tiga bab selesai dibaca, tujuh mata siber puas mengawasi, satu manusia tersisa.",
+    "stats": [
+      [
+        "bab",
+        "3"
+      ]
+    ]
+  },
+  {
+    "no_lama": "011",
+    "slug": "glint",
+    "title": "GLINT",
+    "category": "Eyewear & Jewelry Y2K",
+    "year": "'26",
+    "url": "https://glint-landing-58i.pages.dev/",
+    "role": "Design",
+    "stack": [
+      "React",
+      "Tailwind",
+      "Motion"
+    ],
+    "story": [
+      "Kacamata dan anting Y2K: kilauan kecil yang maksimal. GLINT adalah mesin waktu ke 2003 — era ketika lebih banyak selalu berarti lebih baik.",
+      "Chrome, glitter, dan semuanya berkilau — kecuali kesederhanaan, yang dilarang masuk."
+    ],
+    "blurb": "Eyewear & earrings Y2K: kilauan kecil.",
+    "challenge": "Y2K adalah soal maksimalisme — tantangannya berhenti sebelum situsnya sendiri jadi korban mode.",
+    "outcome": "Mesin waktu ke 2003 yang bekerja sempurna: 999+ kilau tercatat, kesederhanaan resmi dilarang masuk.",
+    "stats": [
+      [
+        "kilau",
+        "999+"
+      ]
+    ]
+  }
+]

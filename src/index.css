@@ -1,0 +1,413 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+   FONT — General Sans saja, 3 berat (400 / 500 / 700).
+   Italic SENGAJA tidak ada: berkasnya tidak pernah diunduh. `font-synthesis: none`
+   di bawah memastikan peramban tidak boleh memiringkan huruf sendiri, dan tidak
+   boleh menebalkan palsu kalau 700 gagal dimuat. (Aturan keras ④ & ⑤)
+   ============================================================================ */
+@font-face {
+  font-family: 'General Sans';
+  src: url('./assets/fonts/general-sans-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'General Sans';
+  src: url('./assets/fonts/general-sans-500.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'General Sans';
+  src: url('./assets/fonts/general-sans-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  /* HANYA DUA WARNA. Tidak ada yang ketiga — tidak di CSS, tidak di aset. (Aturan ③) */
+  --color-void: #0d0d0f;
+  --color-ink: #ffffff;
+
+  --font-sans: 'General Sans', ui-sans-serif, system-ui, sans-serif;
+
+  /* skala jarak tunggal untuk seluruh situs */
+  --spacing: 4px;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+@layer base {
+  html {
+    background: var(--color-void);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    background: var(--color-void);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    /* tidak ada italic/bold palsu — lihat catatan di atas */
+    font-synthesis: none;
+    /* `clip`, bukan `hidden`: `hidden` menjadikan body kotak gulir sendiri dan
+       itu mematikan `position: sticky` yang dipakai seksi karya di Safari lama. */
+    overflow-x: clip;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: var(--color-ink);
+    color: var(--color-void);
+  }
+
+  /* fokus keyboard: kotak 1px, bukan kapsul. (Aturan ②) */
+  :focus-visible {
+    outline: 1px solid var(--color-ink);
+    outline-offset: 3px;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  img {
+    user-select: none;
+  }
+
+  /* scrollbar ikut 2 warna, tidak ada abu-abu bawaan peramban */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-void);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink);
+  }
+}
+
+/* ============================================================================
+   SKALA TIPOGRAFI — 5 peran.
+   Hierarki dibentuk oleh ukuran, bobot, huruf besar/kecil, dan jarak huruf.
+   TIDAK PERNAH oleh opacity: semua teks putih 100%. (keputusanmu)
+   ============================================================================ */
+@layer components {
+  .t-display {
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    line-height: 0.92;
+  }
+
+  /**
+   * HEADLINE HERO — diukur terhadap LEBAR ISINYA, bukan lebar layar.
+   *
+   * Kalau memakai `vw`, margin halaman (40px di desktop, 20px di mobile) memakan
+   * porsi yang berbeda-beda di tiap ukuran, jadi "dinding huruf"-nya tidak pernah
+   * pas: di 1440px baru mengisi 83%, di 390px hampir meluber. Dengan container
+   * query, satu koefisien (7cqw = 7% lebar isi) memberi isian yang sama di semua
+   * ukuran layar — huruf terpanjang berhenti di sekitar 96% lebar isi.
+   */
+  .hero-type {
+    container-type: inline-size;
+  }
+
+  .hero-headline {
+    /* mobile: margin 20px memakan porsi lebih besar → koefisien sedikit lebih kecil */
+    font-size: clamp(1.05rem, 6.7cqw, 10rem);
+  }
+
+  @media (min-width: 768px) {
+    .hero-headline {
+      font-size: clamp(2rem, 7cqw, 10rem);
+    }
+  }
+
+  .t-label {
+    font-weight: 500;
+    font-size: 11px;
+    line-height: 1.4;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .t-body {
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  .t-figure {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.04em;
+  }
+
+  /** judul karya di carousel — lebih berat & sedikit lebih besar dari label */
+  .t-work {
+    font-weight: 700;
+    font-size: 13px;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  /**
+   * Angka superskrip di nav: "Index⁰⁸".
+   * Dinaikkan ke garis kapital, dikecilkan, dan diberi jarak tipis dari label.
+   */
+  .nav-sup {
+    font-size: 0.62em;
+    font-weight: 500;
+    line-height: 0;
+    vertical-align: super;
+    margin-left: 1px;
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /**
+   * RUANG UNTUK SUPERSKRIP DI DALAM MASK.
+   *
+   * `vertical-align: super` mengangkat angka keluar dari kotak barisnya. Karena
+   * pembungkusnya `overflow: hidden` (untuk animasi reveal), bagian yang keluar
+   * itu TERPOTONG — dan angkanya tidak bisa sekadar dibesarkan, ia harus disembuhkan.
+   *
+   * KENAPA NILAINYA TETAP (px), BUKAN em — ini jebakan yang sempat kena:
+   * pembungkusnya mewarisi font-size dari INDUKNYA (16px di overlay, 11px di header),
+   * bukan dari teks di dalamnya (sampai 54px). Jadi `pt-[0.4em]` menghasilkan 6,4px
+   * padahal yang dibutuhkan 13,2px. Nilai px tidak bisa disesatkan seperti itu.
+   *
+   * padding + margin negatif yang sama besar = jarak tata letak TIDAK berubah,
+   * hanya batas potongnya yang naik.
+   */
+  .mask-sup {
+    overflow: hidden;
+    padding-top: 6px;
+    margin-top: -6px;
+  }
+
+  /** versi display besar (menu overlay, sampai ~54px): butuh headroom jauh lebih tinggi */
+  .mask-sup-display {
+    overflow: hidden;
+    padding-top: 24px;
+    margin-top: -24px;
+  }
+}
+
+/* ============================================================================
+   LENIS — css yang disarankan pustakanya
+   ============================================================================ */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+
+/* ============================================================================
+   SEKSI KARYA — carousel delapan karya.
+
+   Mekanismenya bukan karangan sendiri: ini terjemahan dari kode
+   iamrossmason.com (bedah lengkapnya di docs/SPEC-CAROUSEL.md). Nama variabel
+   dan nama kelas sengaja dibuat sama dengan sumbernya (`--x`, `--x-text`,
+   `--scale`, `--diff`, `--x-output`, `--x-text-output`, `--scale-output`,
+   `.is-big`, `.is-left`, `.is-right`, `.is-not-visible`) supaya bisa dibaca
+   berdampingan.
+
+   Aturan mainnya satu: SELURUH gerakan dikendalikan satu skalar `--diff` (0→1)
+   yang ditulis JS tiap frame.
+     `--diff → 0`  strip masih bergerak  → grid rapat, rata, seragam
+     `--diff → 1`  strip berhenti        → karya di tengah membesar 2×,
+                                           tetangganya bergeser ±50% lebar sel
+   ============================================================================ */
+
+/* ── mode dasar: gulir mendatar asli (mobile & prefers-reduced-motion) ────── */
+.karya-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 24px 0 24px;
+}
+
+.karya-track {
+  display: flex;
+  align-items: flex-start;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.karya-track::-webkit-scrollbar {
+  display: none;
+}
+
+.karya-slide {
+  position: relative;
+  flex: 0 0 100vw;
+  min-width: 100vw;
+  max-width: 100vw;
+  scroll-snap-align: start;
+}
+
+/* caption DI ATAS foto — mengikuti referensi */
+.karya-caption {
+  padding: 0 20px 16px;
+}
+
+.karya-foto {
+  display: block;
+  width: 100%;
+  height: auto; /* rasio asli 16:10 — tanpa object-fit, tanpa crop (aturan ⑦) */
+}
+
+.karya-bawah {
+  margin-top: 32px;
+  padding: 0 20px;
+}
+
+.karya-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* ── wordmark: WHAS selebar isi, rata kiri-bawah ───────────────────────────
+   Kotak SVG-nya sudah dipotong tepat ke tinta huruf (lihat Wordmark.tsx),
+   jadi lebarnya 100% isi dan tingginya otomatis — tanpa margin negatif dan
+   tanpa risiko terpotong. `max-height` hanya jaring pengaman untuk layar
+   pendek; karena preserveAspectRatio="xMinYMax", tinta tetap menempel
+   di kiri-bawah saat itu terjadi. */
+.wordmark-mask {
+  overflow: hidden;
+}
+
+.wordmark {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 46svh;
+}
+
+.wordmark-teks {
+  fill: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 700;
+  /* satuan di dalam SVG = satuan viewBox: 400 sama dengan font-size 400 px
+     saat digambar di kanvas pengukuran */
+  font-size: 400px;
+  letter-spacing: -14px;
+}
+
+/* ── mode penjepitan: layar lebar, tanpa reduced-motion ─────────────────── */
+@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+  .karya-panel {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    padding: 36px 40px 40px;
+    /* strip selebar 160vw harus dipotong mendatar, TAPI karya yang membesar 2×
+       masih boleh keluar ke bawah menimpa bar — persis seperti referensi.
+       `clip` satu-satunya nilai overflow yang membolehkan pasangan begitu. */
+    overflow-x: clip;
+    overflow-y: visible;
+    cursor: grab;
+    touch-action: pan-y;
+  }
+  .karya-panel.is-drag {
+    cursor: grabbing;
+  }
+
+  .karya-track {
+    /* strip BLEED ke tepi layar (keluar dari margin halaman), seperti referensi.
+       Alasannya aritmetika, bukan selera: dengan lebar sel 100vw/5, tepi layar
+       jatuh tepat di tengah sel ke-2 — jadi setiap karya bisa duduk PERSIS di
+       tengah saat berhenti (pusat sel = pusat layar di kelipatan lebar sel).
+       Kalau strip dimulai dari margin 40px, karya besarnya selalu meleset 40px
+       dan sebaran tetangganya jadi tidak simetris. */
+    margin-inline: -40px;
+    overflow: visible;
+    scroll-snap-type: none;
+    /* posisinya dihitung JS dari tinggi blok bawah + tinggi karya yang membesar
+       2× (lihat ukur() di Carousel.tsx); 92px hanya nilai cadangan sebelum JS jalan */
+    margin-top: var(--strip-atas, 92px);
+    will-change: transform;
+  }
+
+  .karya-slide {
+    --lebar: 20vw; /* 5 karya per layar */
+    flex: 0 0 var(--lebar);
+    min-width: var(--lebar);
+    max-width: var(--lebar);
+    scroll-snap-align: none;
+
+    --x: 0%;
+    --x-text: 0%;
+    --scale: 0;
+    --x-output: calc(var(--x) * var(--diff, 1));
+    --x-text-output: calc(var(--x-text) * var(--diff, 1));
+    --scale-output: calc(1 + var(--scale) * var(--diff, 1));
+  }
+
+  .karya-slide.is-left {
+    --x: -50%;
+    --x-text: -50%;
+    --scale: 0;
+  }
+  .karya-slide.is-right {
+    --x: 50%;
+    --x-text: 50%;
+    --scale: 0;
+  }
+  .karya-slide.is-big {
+    --x: 0% !important;
+    --x-text: -50%;
+    --scale: 1 !important;
+  }
+  .karya-slide.is-not-visible {
+    --x: 0%;
+    --x-text: 0%;
+    --scale: 0;
+  }
+
+  .karya-caption {
+    position: absolute;
+    left: 0;
+    bottom: 100%;
+    width: 100%;
+    padding: 0 0 16px;
+    transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+    transform: translate3d(var(--x-text-output), 0, 0);
+  }
+
+  .karya-scale {
+    transform-origin: top center;
+    transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+    transform: translate3d(var(--x-output), 0, 0) scale(var(--scale-output));
+  }
+
+  /* karya yang sedang di luar layar tidak boleh ikut beranimasi —
+     kalau tidak, ia "menyusul" terlihat saat masuk kembali */
+  .karya-slide.is-not-visible .karya-caption,
+  .karya-slide.is-not-visible .karya-scale {
+    transition: none;
+  }
+
+  .karya-bawah {
+    margin-top: auto;
+    padding: 0;
+  }
+}

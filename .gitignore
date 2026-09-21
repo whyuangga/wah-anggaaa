@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+*.tsbuildinfo
+
+# Sumber mentah 2880×1800 (19 MB) — tidak dipakai proses build.
+# Ada di mesin ini; buka komentarnya kalau mau ikut tersimpan di GitHub.
+assets/works/_raw/
