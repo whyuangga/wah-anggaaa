@@ -3,8 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import Footer from '../components/Footer';
 import Seo from '../components/Seo';
 import { CONTACT } from '../data/works';
-
-const EASE = [0.22, 1, 0.36, 1] as const;
+import { EASE } from '../components/ui';
 
 const GEN_A = ['Lex', 'Vel', 'Mor', 'Sol', 'Nov', 'Aer', 'Ony', 'Lum', 'Kas', 'Zen', 'Bru', 'Fal', 'Ond', 'Pra', 'Ves', 'Kir', 'Hal', 'Rou', 'Sel', 'Tan', 'Dra', 'Mir', 'Fen', 'Gal', 'Yor', 'Bel', 'Cor', 'Del', 'Esk', 'Fra', 'Gre', 'Hes', 'Jol', 'Kru', 'Lor', 'Mel', 'Ner', 'Osk', 'Pel', 'Quin'];
 const GEN_B = ['avia', 'oria', 'enne', 'essa', 'ova', 'elle', 'issa', 'una', 'ique', 'ora', 'isia', 'ara', 'onne', 'ille', 'usia', 'erre', 'anda', 'ilia', 'ossa', 'urra', 'aria', 'elia', 'inoa', 'ozia', 'ulia', 'emma', 'iva', 'odia', 'amara', 'elora', 'isolde', 'ovia', 'umbra', 'axia', 'evara', 'olia', 'indra', 'orca', 'yuki', 'ozma'];

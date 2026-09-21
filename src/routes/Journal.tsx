@@ -3,8 +3,7 @@ import Footer from '../components/Footer';
 import Seo from '../components/Seo';
 import { TLink } from '../lib/transition';
 import { POSTS, formatDate } from '../lib/journal';
-
-const EASE = [0.22, 1, 0.36, 1] as const;
+import { EASE } from '../components/ui';
 
 export default function Journal() {
   return (

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { isActivePath, useGo } from '../lib/transition';
+import { EASE } from './ui';
 
 export interface MenuLink {
   to: string;
@@ -13,8 +14,6 @@ interface MenuOverlayProps {
   pathname: string;
   onClose: () => void;
 }
-
-const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function MenuOverlay({ open, links, pathname, onClose }: MenuOverlayProps) {
   const go = useGo();

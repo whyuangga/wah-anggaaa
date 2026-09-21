@@ -5,8 +5,7 @@ import Seo, { SITE_URL } from '../components/Seo';
 import { TLink } from '../lib/transition';
 import { POSTS, formatDate } from '../lib/journal';
 import NotFound from './NotFound';
-
-const EASE = [0.22, 1, 0.36, 1] as const;
+import { EASE } from '../components/ui';
 
 export default function JournalPost() {
   const { slug } = useParams();

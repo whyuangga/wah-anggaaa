@@ -4,8 +4,8 @@ import { motion } from 'motion/react';
 import { useJakartaTime } from '../hooks/useJakartaTime';
 import { useStudioStatus } from '../hooks/useStudioStatus';
 import { TLink } from '../lib/transition';
+import { EASE } from './ui';
 
-const EASE = [0.22, 1, 0.36, 1] as const;
 const WORD = 'wah:anggaaa'.split('');
 
 export default function Footer({ giant = true, rule = true }: { giant?: boolean; rule?: boolean }) {

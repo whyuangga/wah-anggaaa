@@ -1,41 +1,11 @@
 import { motion } from 'motion/react';
 import { useParams } from 'react-router-dom';
 import { Fragment } from 'react';
-import type { ReactNode } from 'react';
 import Seo from '../components/Seo';
 import { TLink } from '../lib/transition';
 import { WORKS } from '../data/works';
 import NotFound from './NotFound';
-
-const EASE = [0.22, 1, 0.36, 1] as const;
-
-function Meta({ children }: { children: ReactNode }) {
-  return (
-    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-bone">{children}</p>
-  );
-}
-
-function Reveal({
-  children,
-  delay = 0,
-  className,
-}: {
-  children: ReactNode;
-  delay?: number;
-  className?: string;
-}) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.9, delay, ease: [...EASE] }}
-      className={className}
-    >
-      {children}
-    </motion.div>
-  );
-}
+import { EASE, Meta, Reveal } from '../components/ui';
 
 /** satu gambar galeri dengan blur placeholder */
 function Figure({ src, blur, alt, n }: { src: string; blur: string; alt: string; n: number }) {

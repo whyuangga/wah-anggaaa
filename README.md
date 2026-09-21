@@ -2,8 +2,8 @@
 
 Portfolio satu halaman (+ About & Contact) bertema **gelap, tipografis, dan sinematik**.
 Isinya 11 karya fiktif — "taman bermain satu orang": brand khayalan yang digarap serius,
-dengan latar WebGL reaktif-scroll, transisi halaman morph, dan micro-interaction
-setara standar Awwwards. Dibangun sebagai static SPA yang bisa jalan identik di
+dengan transisi halaman, smooth scroll, dan micro-interaction setara standar
+Awwwards. Tanpa WebGL: latar void polos `#020202` dari CSS murni. Dibangun sebagai static SPA yang bisa jalan identik di
 GitHub Pages maupun Vercel dari codebase yang sama.
 
 > Status: iseng-iseng, just for fun. Bukan situs open-for-work.
@@ -67,12 +67,13 @@ Email placeholder `halo@wahanggaaa.id` + tautan sosial `#` (siap find/replace),
 jam Jakarta live (WIB, update per detik), status `[ just for fun ]`.
 State visual 3D-nya sendiri (state 4).
 
-### Loader (muncul setiap refresh)
+### Loader (hanya di `/`, muncul tiap refresh)
 
-Video kinetik kecil (±112–128px) di tengah + **frame counter raksasa**
-`00 → 99` yang naik dari kanan-bawah ke kanan-atas mengikuti progres frame
-video + garis progres di tepi kanan. Counter mentok di 99 (tak pernah 100),
-lalu overlay terangkat 1,2 detik berbarengan konten fade-in kalem.
+Video kinetik kecil 112px di tengah + **frame counter mono** `00 → 99` di
+kanan-bawah yang mengikuti progres frame video (mentok di 99, tak pernah 100).
+Counter duduk tetap — hanya angkanya yang naik, tanpa garis progres.
+Route selain `/` tidak digate loader: kontennya langsung tampil, jadi LCP dan
+crawler tidak lagi menunggu intro.
 
 ---
 
@@ -83,18 +84,18 @@ lalu overlay terangkat 1,2 detik berbarengan konten fade-in kalem.
 | Framework UI         | **React 19** + **TypeScript ~5.8**                                     |
 | Build tool           | **Vite 6** (`@vitejs/plugin-react`)                                    |
 | Styling              | **Tailwind CSS v4** (via `@tailwindcss/vite`, token di `@theme`)       |
+| Latar belakang       | **CSS murni** — void polos `#020202` (kanvas WebGL dihapus di refactor Phase 1) |
 | Routing              | **React Router DOM v7** (basename adaptif mengikuti `BASE_URL`)        |
 | Smooth scroll        | **Lenis 1.3**                                                          |
 | Animasi scroll/keyframe | **GSAP 3.15** + **ScrollTrigger**                                   |
 | Animasi komponen     | **Motion 12** (`motion/react`: AnimatePresence, whileInView)           |
-| 3D / background      | **Three.js 0.186** — fullscreen quad + **custom GLSL shader** (fbm noise) |
-| Ikon                 | **Lucide React**                                                       |
 | Font                 | Self-hosted **woff2**: General Sans (400/500/600) + IBM Plex Mono (400/500) |
 | Deploy               | GitHub Pages (Actions build) + Vercel (root) — satu codebase           |
 
 > Dependensi template tak terpakai (`express`, `dotenv`, `@google/genai`,
-> `lucide-react`, `tsx`, dll.) sudah dicopot — `package.json` hanya memuat
-> yang dipakai situs. Situsnya sendiri murni static SPA.
+> `lucide-react`, `tsx`, dll.) sudah dicopot — `package.json` hanya memuat yang
+> dipakai situs, dan `three` ikut keluar saat latar WebGL dihapus.
+> Situsnya sendiri murni static SPA.
 
 ---
 
@@ -103,16 +104,14 @@ lalu overlay terangkat 1,2 detik berbarengan konten fade-in kalem.
 Semua animasi DOM memakai properti murah-GPU (**transform & opacity saja**),
 dengan fallback `prefers-reduced-motion`.
 
-### 1. Lenis — smooth scroll + nyawa shader
+### 1. Lenis — smooth scroll
 
 - Satu instance Lenis global menghaluskan scroll roda mouse; di perangkat
   sentuh dibuat ringan agar scroll native tetap jujur.
-- Umpan shader (`sceneBus`): `progress` (0..1) dan `velocity` scroll ditulis
-  dari listener scroll **native** — bukan dari Lenis — agar reaktif juga di
-  perangkat sentuh (`syncTouch: false` membuat Lenis tak memancarkan event
-  saat scroll native). Velocity meluruh ke nol tiap frame via rAF.
-- Scroll dikunci (`lenis.stop()`) saat focus overlay works dibuka, lewat
-  CustomEvent `works-overlay` yang didengar App.
+- Digerakkan GSAP ticker (`lenis.raf` + `lagSmoothing(0)`); tiap event scroll
+  memanggil `ScrollTrigger.update()`.
+- Scroll dikunci (`lenis.stop()` → kelas `.lenis-stopped`) saat focus overlay
+  works dibuka, lewat CustomEvent `works-overlay` yang didengar App.
 
 ### 2. GSAP ScrollTrigger — scrub kata & scroll-spy
 
@@ -126,25 +125,24 @@ dengan fallback `prefers-reduced-motion`.
 - **Scroll-spy works (mobile)**: 11 ScrollTrigger `onToggle` (khusus
   `pointer: coarse`) menggerakkan state `focus` yang sama dengan hover
   desktop — spotlight mengikuti gambar yang sedang terlihat.
-- **State section 3D**: hook `useSceneSections` memakai ScrollTrigger untuk
-  menulis section dominan (0 hero, 1 works, 2 manifesto) ke `sceneBus`.
 - **Drift horizontal About** (meniru Inspirux): hero masuk dengan dua baris
   konvergen dari sisi berlawanan (`x: ±14% → 0`, Motion); teks recognition
   memakai mesin scrub GSAP (`x: ±35% → 0` desktop, ±12% mobile); tiap baris
   capabilities meluncur `x: 35% → 0` dengan scrub per baris
   (`start: 'top 90%'`, `end: 'bottom +=70%'`).
 
-### 3. GSAP timeline — transisi halaman morph
+### 3. GSAP timeline — transisi halaman (DOM)
 
 `TransitionProvider` (`src/lib/transition.tsx`) mencegat navigasi via komponen
-`TLink`:
-
-1. Konten lama fade-out + uniform `morph` di-tween 0 → 1 (shader ikut "warp").
-2. `navigate()` berjalan di tengah warp.
-3. Konten baru fade-in + `morph` kembali 0 (warp reda).
-
-Tombol back/forward browser mendapat fade cepat. Guard `busyRef` mencegah
+`TLink`: konten lama fade-out naik 24px (0,32 dtk) → `navigate()` + scroll ke
+atas + refresh ScrollTrigger → konten baru fade-in turun (0,7 dtk). Tombol
+back/forward browser mendapat fade cepat 0,45 dtk. Guard `busyRef` mencegah
 navigasi ganda; klik link halaman aktif = scroll ke atas.
+
+Sejak kanvas WebGL dihapus, tidak ada lagi tween uniform shader: transisi murni
+DOM. Transform hanya menyentuh wrapper konten — Nav ada di **luar** wrapper dan
+overlay works di-render lewat **portal**, jadi tak ada lagi `position: fixed`
+yang rusak dan tak perlu tambalan `clearProps`.
 
 ### 4. Motion — enter/exit & reveal saat terlihat
 
@@ -162,46 +160,41 @@ navigasi ganda; klik link halaman aktif = scroll ke atas.
   `data-cursor` (`buka ↗`, `racik!`, `kunjungi ↗`). Cursor native
   disembunyikan hanya saat komponen aktif (class `.has-cursor`).
 
-### 5. Three.js — latar shader reaktif (custom GLSL)
+### 5. Latar — void polos
 
-Fullscreen quad (`src/canvas/Scene.tsx` + `shaders.ts`) me-render fbm noise
-monokrom abstrak. Uniform yang dianimasikan tiap frame:
+Sebelum refactor ada satu kanvas three.js fullscreen sebagai latar reaktif
+(kilau saat scroll + warp saat pindah halaman, dengan uniform adaptif dan
+adaptive quality). Setelah diperiksa, shader-nya hanya menggambar void flat
+plus efek tipis yang nyaris tak terlihat — dan `uState`, `uProgress`,
+`uPointer`, `uOct` bahkan tidak dipakai di dalam GLSL.
 
-| Uniform | Sumber | Efek |
-| ------- | ------ | ---- |
-| `uTime` | clock | aliran noise tak pernah diam |
-| `uState` | `sceneTarget()` (route/section, di-lerp) | 5 state visual: hero, works, manifesto, about, contact |
-| `uScroll` | `sceneBus.progress` | latar "bernapas" mengikuti kedalaman scroll |
-| `uVel` | `sceneBus.velocity` (diredam) | sentakan energi saat scroll cepat |
-| `uMorph` | tween GSAP transisi halaman | warp saat pindah route |
-| `uOct` | level kualitas adaptif | jumlah oktaf fbm (detail vs hemat GPU) |
-| `uRes` | ukuran kanvas × DPR cap | ketajaman retina yang dibatasi |
+Karena itu kanvas, `sceneBus`, `useSceneSections`, dan dependency `three`
+dihapus: **−517 kB JS mentah (−130 kB gzip)** untuk hasil visual yang praktis
+sama. Latar sekarang `#020202` dari CSS — nol dependency, nol biaya render,
+nol risiko konteks WebGL gagal.
 
-**Adaptive quality**: DPR dibatasi (≤1 di mobile, ≤1,5–2 di desktop) dan fbm
-oktaf dikurangi di `pointer: coarse`. Pengaman satu arah: bila rata-rata
-frame (EMA 120 frame) > 26ms, kualitas turun bertahap sampai lancar.
+### 6. Loader — video kecil + counter (rAF murni)
 
-### 6. Loader — frame counter ala Lallé (rAF murni)
+Muncul **hanya di landing (`/`) dan hanya saat halaman di-refresh**; route lain
+langsung menampilkan kontennya (tak ada video 772 kB yang menahan LCP, crawler
+selalu melihat konten). `Loader.tsx` menjalankan loop `requestAnimationFrame`
+sendiri:
 
-`Loader.tsx` menjalankan loop `requestAnimationFrame` sendiri:
-
-- Progres = `video.currentTime / video.duration` (counter benar-benar
-  mengikuti frame video; fallback sintetis 3 detik bila durasi tak dikenal).
-- Teks = `00–99` via `textContent` langsung (tanpa re-render), `padStart(2)`.
-- Posisi dihitung rumus ala Lallé: `y = (tinggiLayar − tinggiAngka − 2×margin)
-  × (1 − progres)` — angka naik mulus kanan-bawah → kanan-atas; terkunci di
-  `99` saat selesai.
-- Garis tepi kanan `scaleY(0 → 1)` sebagai bar progres.
-- Selesai mengikuti event `ended` video; fallback 4,5 detik; reduced-motion →
-  0,7 detik tanpa counter.
+- Progres = `video.currentTime / video.duration` (fallback sintetis 3 dtk bila
+  durasi tak dikenal); video diputar `playbackRate = 2` → selesai ±3 dtk.
+- Teks = `00–99` via `textContent` langsung (tanpa re-render), `padStart(2)`,
+  mentok di `99`.
+- Counter duduk tetap di kanan-bawah; hanya angkanya yang naik.
+- Selesai mengikuti event `ended` video; fallback 4,5 dtk; error video langsung
+  selesai; reduced-motion → 0,7 dtk tanpa video & counter.
 
 ---
 
 ## Sistem Desain
 
 - **2 warna saja**: `--color-void: #020202` (bg) dan `--color-bone: #EAE8E1`
-  (teks). Hierarki hanya lewat opacity (100/70/45/25/12). Thumbnail works
-  grayscale permanen (`.img-mono`); motif 3D abstrak monokrom.
+  (teks). Hierarki hanya lewat opacity (100/70/45/25/12). Semua gambar dalam
+  situs grayscale permanen (`.img-mono`), termasuk thumbnail works.
 - **2 font saja**: General Sans (display/sans) + IBM Plex Mono (label/meta).
   Self-hosted woff2 — nol request font eksternal, nol FOUT berkedip.
 - **Pengganti pill/marquee** (yang dilarang permanen): `[brackets]`, rules,
@@ -218,50 +211,54 @@ dan loader-nya.
 ## Struktur Proyek
 
 ```
-├── PLAN.md                  → spesifikasi yang disetujui user (acuan kerja)
-├── vercel.json              → rewrite SPA per-route + fallback /(.*) ke 404 nyasar
+├── PLAN.md                  → spesifikasi awal (arsip; sebagian sudah usang)
+├── README.md                → dokumen ini
+├── vercel.json              → rewrite SPA: semua rute → /index.html
 ├── public/
 │   ├── _redirects           → (cadangan redirect SPA)
 │   ├── og.jpg               → preview share sosial 1200×630 (monokrom)
-│   ├── images/works/        → 11 hero + 29 galeri webp + 11 og jpg (±3.5MB)
+│   ├── images/works/        → 11 hero + 29 galeri webp + 11 og jpg (±3,7 MB)
 │   ├── robots.txt + sitemap.xml → SEO (sitemap dibuat saat prebuild)
-│   └── videos/loader.mp4    → film damage 6 dtk (720p, tanpa audio)
+│   └── videos/loader.mp4    → video intro 6 dtk (720p, tanpa audio)
 └── src/
-    ├── main.tsx             → entry: Router + Lenis + Scene + Loader gate
-    ├── App.tsx              → shell: Nav, Routes, TransitionProvider, overlay lock
-    ├── index.css            → @font-face, token @theme, base, .img-mono
-    ├── canvas/
-    │   ├── bus.ts           → sceneBus: jembatan mutable React → shader
-    │   ├── shaders.ts       → vertex + fragment latar void + kilau transisi
-    │   └── Scene.tsx        → renderer fullscreen + loop + adaptive quality
+    ├── main.tsx             → entry React
+    ├── App.tsx              → shell: gate loader (khusus `/`) + Nav + Cursor + Routes + transition
+    ├── index.css            → @font-face, token @theme, base, .img-mono, CSS Lenis, kursor, .md-body
     ├── components/
-    │   ├── Loader.tsx       → intro video + frame counter rAF + garis progres
-    │   ├── Nav.tsx          → navigasi fixed transparan (TLink)
-    │   ├── Cursor.tsx       → kursor custom desktop (rAF lerp + label data-cursor)
-    │   ├── Footer.tsx       → footer raksasa (cascade huruf + wave hover) + jam + status studio
-    │   └── Seo.tsx          → title/desc/OG kanonis + JSON-LD per route
+    │   ├── ui.tsx            → primitif bersama: EASE, PAGE_X, CTA, Meta, Reveal, Arrow
+    │   ├── Loader.tsx        → intro video + frame counter (rAF)
+    │   ├── Nav.tsx           → navigasi fixed (mix-blend-difference)
+    │   ├── MenuOverlay.tsx   → menu fullscreen mobile
+    │   ├── Cursor.tsx        → kursor custom desktop (lerp + label data-cursor)
+    │   ├── WorksFocusOverlay.tsx → overlay focus karya (portal + focus trap)
+    │   ├── Footer.tsx        → footer raksasa + jam WIB + status studio
+    │   └── Seo.tsx           → title/desc/OG kanonis + JSON-LD per route
+    ├── sections/             → babak landing, dipisah dari route-nya
+    │   ├── HomeHero.tsx      → hero + kata kinetik
+    │   ├── HomeWorks.tsx     → kolase + rel judul + spotlight + scroll-spy
+    │   └── HomeManifesto.tsx → manifesto scrub kata-per-kata
     ├── routes/
-    │   ├── Home.tsx         → hero + Works (Lallé grid/spotlight/overlay) + manifesto scrub
-    │   ├── About.tsx        → profil + drift horizontal + capability + kolofon
-    │   ├── Contact.tsx      → email + sosial + generator brand khayalan + status
-    │   ├── WorkCase.tsx     → case-study per karya (/works/:slug)
-    │   ├── Journal.tsx        → daftar tulisan (/journal)
-    │   ├── JournalPost.tsx    → isi tulisan (/journal/:slug)
-    │   └── NotFound.tsx     → halaman 404 ("nyasar.")
-    ├── data/works.ts        → 11 karya: meta + thumb/galeri/blur + story + challenge/outcome + stats
-    ├── lib/journal.ts       → loader + parser markdown jurnal
-    ├── content/journal/       → tulisan *.md + frontmatter (tambah file = terbit)
+    │   ├── Home.tsx          → komposisi 3 babak + footer (jadi ±14 baris)
+    │   ├── About.tsx         → profil + drift horizontal + capability + kolofon
+    │   ├── Contact.tsx       → email + sosial + generator brand khayalan
+    │   ├── WorkCase.tsx      → case-study per karya (/works/:slug)
+    │   ├── Journal.tsx       → daftar tulisan (/journal)
+    │   ├── JournalPost.tsx   → isi tulisan (/journal/:slug)
+    │   └── NotFound.tsx      → halaman 404 ("nyasar.")
+    ├── data/works.ts         → 11 karya + kontak: meta, thumb/galeri/blur, cerita, angka
+    ├── lib/
+    │   ├── journal.ts        → loader + parser markdown jurnal
+    │   └── transition.tsx    → TLink + transisi DOM antar halaman
     ├── hooks/
-    │   ├── useSceneSections.ts → ScrollTrigger → section aktif ke sceneBus
     │   ├── useJakartaTime.ts   → jam WIB live per detik
     │   └── useStudioStatus.ts  → status kocak mengikuti jam Jakarta
-    ├── lib/transition.tsx   → TLink + morph timeline (GSAP × shader warp)
-    └── assets/fonts/        → 5 file woff2 self-hosted
+    └── assets/fonts/         → 5 file woff2 self-hosted
 ```
 
-Alur data animasi: `scroll native/ScrollTrigger/rAF → sceneBus (mutable,
-tanpa re-render) → uniform shader per frame`. React state hanya untuk UI
-diskrit (focus works, overlay open, route).
+Alur data animasi: scroll native → Lenis (digerakkan GSAP ticker) →
+ScrollTrigger atau loop rAF yang menulis `style` langsung, **tanpa state React**.
+State React hanya untuk UI diskret (spotlight works, overlay terbuka, urutan
+acak, route).
 
 ---
 
@@ -287,17 +284,19 @@ Satu codebase, dua target — dibedakan otomatis oleh `vite.config.ts`:
 | GitHub Pages | `/wah-anggaaa/` | otomatis via `BASE_URL` | `dist/404.html` (salinan index) |
 | Vercel (`VERCEL=1`) | `/` | otomatis via `BASE_URL` | `vercel.json` rewrites |
 
-- **GitHub Pages**: workflow `.github/workflows/deploy.yml` (build → artifact →
-  deploy). Perlu Pages source = "GitHub Actions".
-- **Vercel**: import repo → deploy. Rewrite `/about` & `/contact` → `/index.html`
-  sudah disiapkan.
+- **GitHub Pages**: `base` sudah disiapkan, tapi workflow
+  `.github/workflows/deploy.yml` **tidak ada di repo ini** — perlu dibuat dulu
+  kalau Pages mau dipakai (Pages source = "GitHub Actions").
+- **Vercel**: import repo → deploy. Fallback SPA ditangani satu rewrite
+  catch-all di `vercel.json`.
 
 ---
 
-## Performa Mobile
+## Performa
 
-- Shader: DPR ≤1 + oktaf fbm lebih sedikit di `pointer: coarse`; step-down
-  otomatis bila frame > 26ms (EMA).
+- **Tanpa kanvas WebGL**: latar void dari CSS — nol biaya GPU, nol 517 kB JS.
+- **Loader hanya di `/`** dan tidak menahan route lain, jadi halaman dalam
+  langsung render dari HTML pertama.
 - Works mobile tanpa CSS multicol (1 kolom flex) — multicol + gambar adalah
   biang jank scroll Android.
 - Gambar: webp self-hosted (maks 1200px, q80) + placeholder blur mungil
@@ -306,8 +305,21 @@ Satu codebase, dua target — dibedakan otomatis oleh `vite.config.ts`:
 - Meta share: `og:*` + `twitter:card` + canonical menunjuk domain Vercel
   (URL absolut → valid dari kedua platform deploy).
 - Scrub manifesto & counter loader memakai mutasi DOM langsung, bukan state
-  React — PMK (paint murah, kompozitor kenyang).
+  React.
 - Font self-hosted woff2: tanpa render-blocking pihak ketiga.
+
+**Angka bundle (hasil `npm run build`):**
+
+| | JS mentah | JS gzip |
+| --- | --- | --- |
+| Sebelum refactor Phase 1 | ±1.157 kB | ±340 kB |
+| Sesudah | ±639 kB | ±209 kB |
+
+Sisa kerja yang masih terbuka: chunk `index-*.js` (react + gsap + motion +
+lenis + router) masih ±546 kB mentah / ±183 kB gzip. Kandidat Phase 2:
+`manualChunks` untuk caching, menunda GSAP/ScrollTrigger sampai setelah paint
+pertama, dan mengganti animasi reveal yang paling sederhana (fade/translate)
+dengan CSS agar `motion` bisa menyusut.
 
 ---
 
@@ -316,8 +328,12 @@ Satu codebase, dua target — dibedakan otomatis oleh `vite.config.ts`:
 | Mau ganti…      | File |
 | --------------- | ---- |
 | Daftar karya    | `src/data/works.ts` |
-| Email & sosial  | `src/routes/Contact.tsx` (`halo@wahanggaaa.id`, `#`) |
-| Teks manifesto  | `src/routes/Home.tsx` → `ManifestoScrub text=` |
+| Kontak (email & sosial) | `src/data/works.ts` → `CONTACT` |
+| Teks hero       | `src/sections/HomeHero.tsx` |
+| Kolase works + rel judul | `src/sections/HomeWorks.tsx` |
+| Teks manifesto  | `src/sections/HomeManifesto.tsx` → `ManifestoScrub text=` |
+| Overlay focus karya | `src/components/WorksFocusOverlay.tsx` |
+| Easing / label / reveal / CTA | `src/components/ui.tsx` |
 | Video loader    | `public/videos/loader.mp4` |
 | Tulisan jurnal  | tambah `content/journal/slug.md` (frontmatter: title/date/desc/tags) |
 | Domain SEO      | `src/components/Seo.tsx` (`SITE_URL`) + `scripts/sitemap.mjs` (`SITE`) |
@@ -326,4 +342,36 @@ Satu codebase, dua target — dibedakan otomatis oleh `vite.config.ts`:
 
 ---
 
-Dibuat iseng-iseng dengan React + Three.js. © 2026 WAH:ANGGAAA.
+## Riwayat Refactor
+
+### Phase 1 — struktur + performa (21 Sep 2026)
+
+- **three.js dibuang sepenuhnya.** `src/canvas/` (bus, shaders, Scene),
+  `useSceneSections`, dan uniform warp di `lib/transition.tsx` dihapus; latar
+  kembali ke void polos `#020202` → −517 kB JS mentah / −130 kB gzip.
+- **Loader hanya di `/`.** Route lain tidak lagi digate; kontennya tampil
+  langsung tanpa menunggu intro.
+- **`Home.tsx` dipecah** dari 519 baris jadi ±14 baris komposisi + `sections/`
+  (hero, works, manifesto).
+- **Primitif bersama** di `components/ui.tsx`: `EASE` (dulu ditulis ulang di 10
+  file), `Meta` (3×), `Reveal` (2×), `CTA`, `PAGE_X`, `Arrow`.
+- **Overlay works dirapikan**: di-render lewat portal ke `document.body`
+  (tak lagi bergantung `clearProps` untuk memperbaiki `position: fixed`),
+  fokus dipindah ke dalam dialog & dikurung saat Tab, Esc/←/→ tetap jalan.
+- **Sisa template & dead code**: alias `@/*` yang mati, `experimentalDecorators`,
+  duplikat `vite` di `dependencies`, 5 rewrite `vercel.json` yang mubazir,
+  import tak terpakai (kini `noUnusedLocals`/`noUnusedParameters` aktif).
+- **Dokumen diselaraskan dengan kode**: klaim yang tak pernah ada (counter naik
+  ke atas, garis progres, drift capabilities, info timezone di Contact, shader
+  fbm, workflow Pages) sudah dikoreksi atau dibuang.
+
+Diverifikasi: `tsc --noEmit` bersih, `npm run build` sukses, dan uji browser
+otomatis (Chromium) untuk 7 route + interaksi overlay (buka, Tab, ←/→, Esc,
+scroll terkunci) di desktop & mobile — nol error konsol/runtime.
+
+Foto kondisi sebelum refactor (audit lengkap baris per baris) ada di
+`deskripsi-landing-page-sebelum-refactor.md`.
+
+---
+
+Dibuat iseng-iseng dengan React + GSAP + Motion. © 2026 WAH:ANGGAAA.

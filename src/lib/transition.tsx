@@ -11,7 +11,6 @@ import {
 import { useLocation, useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { sceneBus } from '../canvas/bus';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -29,13 +28,19 @@ export function isActivePath(to: string, pathname: string): boolean {
 
 type ProviderProps = {
   children: ReactNode;
+  /** wrapper konten route — SATU-SATUNYA elemen yang di-transform saat transisi */
   contentRef: RefObject<HTMLDivElement | null>;
   scrollTop: () => void;
 };
 
 /**
- * Transisi 3D morph: konten fade-out + warp shader → navigate →
- * konten fade-in + warp reda. Back/forward browser dapat fade cepat.
+ * Transisi halaman: konten lama fade-out naik → `navigate()` → konten baru
+ * fade-in turun. Sejak kanvas WebGL dihapus, transisi ini murni DOM — tidak ada
+ * lagi tween uniform shader per perpindahan route.
+ *
+ * Penting: `contentRef` tidak boleh memuat elemen `position: fixed`
+ * (transform di elemen ini jadi containing block bagi mereka).
+ * Nav ada di luar wrapper, overlay works di-render lewat portal.
  */
 export function TransitionProvider({ children, contentRef, scrollTop }: ProviderProps) {
   const location = useLocation();
@@ -55,17 +60,14 @@ export function TransitionProvider({ children, contentRef, scrollTop }: Provider
       const tl = gsap.timeline({
         onComplete: () => {
           busyRef.current = false;
-          // bersihkan inline style: sisa transform mengubah containing block
-          // dan merusak elemen fixed (Nav) di dalam konten
           if (el) gsap.set(el, { clearProps: 'opacity,transform' });
         },
       });
 
-      if (!reduced) {
-        tl.to(sceneBus, { morph: 1, duration: 0.38, ease: 'power2.in' }, 0);
-        if (el) tl.to(el, { opacity: 0, y: -24, duration: 0.32, ease: 'power2.in' }, 0);
+      if (reduced) {
+        if (el) tl.to(el, { opacity: 0, duration: 0.15 }, 0);
       } else if (el) {
-        tl.to(el, { opacity: 0, duration: 0.15 }, 0);
+        tl.to(el, { opacity: 0, y: -24, duration: 0.32, ease: 'power2.in' }, 0);
       }
 
       tl.add(() => {
@@ -74,42 +76,37 @@ export function TransitionProvider({ children, contentRef, scrollTop }: Provider
         requestAnimationFrame(() => ScrollTrigger.refresh());
       });
 
-      if (!reduced && el) {
+      if (reduced) {
+        if (el) tl.to(el, { opacity: 1, duration: 0.25 }, '+=0.02');
+      } else if (el) {
         tl.fromTo(
           el,
           { opacity: 0, y: 24 },
           { opacity: 1, y: 0, duration: 0.7, ease: 'power3.out' },
           '+=0.02',
         );
-        tl.to(sceneBus, { morph: 0, duration: 0.8, ease: 'power3.out' }, '-=0.55');
-      } else {
-        if (el) tl.to(el, { opacity: 1, duration: 0.25 }, '+=0.02');
-        tl.to(sceneBus, { morph: 0, duration: 0.01 }, 0);
       }
     },
     [location.pathname, navigate, scrollTop, contentRef],
   );
 
-  // back/forward browser (location berubah tanpa go()): fade cepat + warp kecil
+  // back/forward browser (location berubah tanpa go()): fade cepat
   useEffect(() => {
     if (busyRef.current) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const el = contentRef.current;
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduced) return;
-    if (el) {
-      gsap.fromTo(
-        el,
-        { opacity: 0.2 },
-        {
-          opacity: 1,
-          duration: 0.45,
-          ease: 'power2.out',
-          onComplete: () => gsap.set(el, { clearProps: 'opacity' }),
-        },
-      );
-    }
-    gsap.timeline().to(sceneBus, { morph: 0.4, duration: 0.2 }).to(sceneBus, { morph: 0, duration: 0.5 });
-  }, [location.pathname]);
+    if (!el) return;
+    gsap.fromTo(
+      el,
+      { opacity: 0.2 },
+      {
+        opacity: 1,
+        duration: 0.45,
+        ease: 'power2.out',
+        onComplete: () => gsap.set(el, { clearProps: 'opacity' }),
+      },
+    );
+  }, [location.pathname, contentRef]);
 
   return <GoContext.Provider value={go}>{children}</GoContext.Provider>;
 }
@@ -121,7 +118,7 @@ type TLinkProps = {
   ariaLabel?: string;
 };
 
-/** Link internal yang lewat transisi morph (tetap <a> untuk semantik). */
+/** Link internal yang lewat transisi halaman (tetap `<a>` untuk semantik). */
 export function TLink({ to, children, className, ariaLabel }: TLinkProps) {
   const go = useGo();
   const onClick = (e: MouseEvent<HTMLAnchorElement>) => {

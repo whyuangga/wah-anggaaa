@@ -7,7 +7,6 @@ import Lenis from 'lenis';
 import Nav from './components/Nav';
 import Loader from './components/Loader';
 import Cursor from './components/Cursor';
-import { sceneBus } from './canvas/bus';
 import { TransitionProvider } from './lib/transition';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -20,14 +19,11 @@ const WorkCase = lazy(() => import('./routes/WorkCase'));
 const NotFound = lazy(() => import('./routes/NotFound'));
 const Journal = lazy(() => import('./routes/Journal'));
 const JournalPost = lazy(() => import('./routes/JournalPost'));
-const Scene = lazy(() => import('./canvas/Scene'));
 
-/** Sinkron route → bus scene + scroll atas + refresh trigger. */
+/** Scroll ke atas + hitung ulang posisi trigger setiap ganti route. */
 function RouteSync({ scrollTop }: { scrollTop: () => void }) {
   const { pathname } = useLocation();
   useEffect(() => {
-    sceneBus.route = pathname;
-    sceneBus.section = 0;
     scrollTop();
     const id = requestAnimationFrame(() => ScrollTrigger.refresh());
     return () => cancelAnimationFrame(id);
@@ -36,12 +32,14 @@ function RouteSync({ scrollTop }: { scrollTop: () => void }) {
 }
 
 function Shell() {
+  const { pathname } = useLocation();
   const lenisRef = useRef<Lenis | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
-  // Ala Onoera: konten TIDAK di-mount sebelum intro selesai,
-  // lalu fade-in kalem berbarengan dengan terangkatnya overlay.
-  // Intro selalu tampil setiap refresh (tanpa session skip).
-  const [entered, setEntered] = useState(false);
+
+  // Intro sinematik hanya di landing (`/`) dan hanya saat halaman di-refresh.
+  // Route lain langsung tampil: tidak ada video yang menahan LCP, dan crawler
+  // selalu melihat kontennya.
+  const [entered, setEntered] = useState(() => pathname !== '/');
 
   const scrollTop = useCallback(() => {
     const lenis = lenisRef.current;
@@ -63,33 +61,6 @@ function Shell() {
       ScrollTrigger.update();
     });
 
-    // Umpan shader dari scroll NATIVE (satu-satunya sumber progress/velocity):
-    // Lenis + syncTouch:false tak memancarkan event saat scroll sentuh, dan di
-    // desktop pun Lenis menggerakkan window scroll asli → tercakup juga.
-    let lastY = window.scrollY;
-    let lastT = performance.now();
-    const onNativeScroll = () => {
-      const y = window.scrollY;
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      sceneBus.progress = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
-      const now = performance.now();
-      const dt = Math.max(1, now - lastT);
-      const v = ((y - lastY) / dt) * 16.7; // px per frame (se-skala Lenis)
-      sceneBus.velocity = Math.max(-60, Math.min(60, v));
-      lastY = y;
-      lastT = now;
-    };
-    window.addEventListener('scroll', onNativeScroll, { passive: true });
-
-    // velocity meluruh ke nol tiap frame (Scene me-lerp menujunya)
-    let sraf = 0;
-    const decay = () => {
-      sceneBus.velocity *= 0.9;
-      if (Math.abs(sceneBus.velocity) < 0.01) sceneBus.velocity = 0;
-      sraf = requestAnimationFrame(decay);
-    };
-    sraf = requestAnimationFrame(decay);
-
     const tick = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
@@ -100,8 +71,6 @@ function Shell() {
 
     return () => {
       window.removeEventListener('load', onLoad);
-      window.removeEventListener('scroll', onNativeScroll);
-      cancelAnimationFrame(sraf);
       gsap.ticker.remove(tick);
       lenis.destroy();
       lenisRef.current = null;
@@ -110,14 +79,13 @@ function Shell() {
 
   // kunci scroll selama intro
   useEffect(() => {
-    const lenis = lenisRef.current;
-    if (!entered) {
-      lenis?.stop();
-      document.body.style.overflow = 'hidden';
-    } else {
-      lenis?.start();
+    if (entered) {
+      lenisRef.current?.start();
       document.body.style.overflow = '';
+      return;
     }
+    lenisRef.current?.stop();
+    document.body.style.overflow = 'hidden';
   }, [entered]);
 
   // kunci scroll halaman saat focus overlay works dibuka
@@ -131,45 +99,35 @@ function Shell() {
     return () => window.removeEventListener('works-overlay', onOverlay);
   }, [entered]);
 
-  // preload chunk route + scene sejak awal → reveal tanpa jeda
-  useEffect(() => {
-    import('./routes/Home').catch(() => {});
-    import('./routes/About').catch(() => {});
-    import('./routes/Contact').catch(() => {});
-    import('./routes/WorkCase').catch(() => {});
-    import('./routes/NotFound').catch(() => {});
-    import('./routes/Journal').catch(() => {});
-    import('./routes/JournalPost').catch(() => {});
-    import('./canvas/Scene').catch(() => {});
-  }, []);
-
   return (
     <TransitionProvider contentRef={contentRef} scrollTop={scrollTop}>
       <div className="min-h-screen bg-void text-bone">
         <AnimatePresence>{!entered && <Loader onDone={() => setEntered(true)} />}</AnimatePresence>
 
-        <Suspense fallback={null}>
-          <Scene />
-        </Suspense>
-
         <Cursor />
 
-        <div ref={contentRef} className="relative z-10">
+        <div className="relative z-10">
           {entered && <Nav />}
           <RouteSync scrollTop={scrollTop} />
-          {entered && (
-            <Suspense fallback={null}>
-              <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/works/:slug" element={<WorkCase />} />
-                <Route path="/journal" element={<Journal />} />
-                <Route path="/journal/:slug" element={<JournalPost />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-          )}
+
+          {/* Wrapper transisi: satu-satunya elemen yang di-transform saat pindah
+              halaman, dan sengaja TIDAK memuat elemen fixed (Nav di luar,
+              overlay works lewat portal) agar transform tak merusak posisinya. */}
+          <div ref={contentRef}>
+            {entered && (
+              <Suspense fallback={null}>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/works/:slug" element={<WorkCase />} />
+                  <Route path="/journal" element={<Journal />} />
+                  <Route path="/journal/:slug" element={<JournalPost />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+            )}
+          </div>
         </div>
       </div>
       <Analytics />

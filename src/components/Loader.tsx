@@ -1,9 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
+import { EASE } from './ui';
 
 const VIDEO_SRC = `${import.meta.env.BASE_URL}videos/loader.mp4`;
-
-const EASE = [0.22, 1, 0.36, 1] as const;
 
 /**
  * Preloader: video kecil 112px di tengah + "( loading )" di paling bawah

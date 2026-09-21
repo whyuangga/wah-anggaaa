@@ -6,29 +6,9 @@ import type { ReactNode } from 'react';
 import Footer from '../components/Footer';
 import Seo from '../components/Seo';
 import { TLink } from '../lib/transition';
+import { EASE, Meta, Reveal } from '../components/ui';
 
 gsap.registerPlugin(ScrollTrigger);
-
-const EASE = [0.22, 1, 0.36, 1] as const;
-
-function Meta({ children }: { children: ReactNode }) {
-  return (
-    <p className="font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-bone">{children}</p>
-  );
-}
-
-function Reveal({ children, delay = 0 }: { children: ReactNode; delay?: number }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 32 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.9, delay, ease: [...EASE] }}
-    >
-      {children}
-    </motion.div>
-  );
-}
 
 /**
  * Dua baris raksasa konvergen dari sisi berlawanan mengikuti scroll —
